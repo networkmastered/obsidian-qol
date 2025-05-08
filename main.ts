@@ -1,6 +1,7 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, TFolder, ToggleComponent } from 'obsidian'
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting, TFile, TFolder, ToggleComponent } from 'obsidian'
 
 interface qolSettings {
+	//Public Settings
 	ExpandFolder: boolean
 	FunctionBypass: boolean
 	NonSymbChars: boolean
@@ -12,9 +13,21 @@ interface qolSettings {
 	TouchScreen: boolean
 	TouchScreenFiles: boolean
 	TouchScreenFilesWarn: boolean
+
+	WriteTimer: boolean
+	WriteTimerFormat: string
+
+	UpdateChecking: boolean
+
+
+
+
+	//Private Settings
+	LastUpdateCheck: number
 }
 
 const DEFAULT_SETTINGS: qolSettings = {
+	// Public Settings
 	ExpandFolder: false,
 	FunctionBypass: false,
 	NonSymbChars: false,
@@ -25,7 +38,36 @@ const DEFAULT_SETTINGS: qolSettings = {
 
 	TouchScreen: false,
 	TouchScreenFiles: false,
-	TouchScreenFilesWarn: true
+	TouchScreenFilesWarn: true,
+
+	WriteTimer: false,
+	WriteTimerFormat: "%ws/%bs",
+
+	UpdateChecking: true,
+
+
+
+
+	// Private Settings
+	LastUpdateCheck: 0,
+}
+
+let USER_TIMINGS:
+	{
+		[key: string]: {
+			[key: string]: {
+				[key: string]: {
+					[key: string]: number
+				}
+			}
+		}
+	} = {
+	writing: {
+		// lastKeyPress: 0,
+		// breakTime: 0,
+		// writeTime: 0,
+		files: {}
+	}
 }
 
 function GrabWorkspaceElement() {
@@ -187,13 +229,70 @@ export default class qolPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings()
 
+		setTimeout(() => {
+			if (new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
+				console.log("UPDATE REQUEST")
+				this.settings.LastUpdateCheck = new Date().getTime()
+				this.saveSettings()
+				// const req = new XMLHttpRequest()
+				// req.addEventListener("load",(data)=>{
+				// 	console.log(data)
+				// })
+				// req.open("GET","https://api.github.com/repos/networkmastered/obsidian-qol/releases/latest")
+				// req.setRequestHeader("default-src","none")
+				// req.send()
+				//SECURITY_POLICY_VIOLATION:'Content Security Policy'
+
+				// const req = new XMLHttpRequest()
+				// req.addEventListener("load", (data) => {
+				// 	let res = req.responseText
+				// 	let json = undefined
+				// 	try { json = JSON.parse(res) } catch (_) { }
+				// 	if (res && json) {
+				// 		if (json.latestVersion) {
+				// 			if (json.latestVersion != this.manifest.version) {
+				// 				new Notice(`QOL: An update is avalible! You can update by checking for updates in the community plugins tab. (${this.manifest.version}->${json.latestVersion})`)
+				// 			}
+				// 		}
+				// 	}
+				// })
+				// req.open("GET", "https://networkmastered.github.io/endpoints/obsidian/qol.json")
+				// req.setRequestHeader("default-src", "none")
+				// req.send()
+				// cross-platform requirement
+
+				// requestUrl("https://networkmastered.github.io/endpoints/obsidian/qol.json").then((res) => {
+				// 	console.log(res)
+				// 	if (res.json) {
+				// 		if (res.json.latestVersion) {
+				// 			console.log(res.json.latestVersion)
+				// 			if (res.json.latestVersion != this.manifest.version) {
+				// 				new Notice(`QOL: An update is avalible! You can update by checking for updates in the community plugins tab. (${this.manifest.version}->${res.json.latestVersion})`)
+				// 			}
+				// 		}
+				// 	}
+				// })
+				// Ability to now access github api
+				requestUrl("https://api.github.com/repos/networkmastered/obsidian-qol/releases/latest").then((res) => {
+					console.log(res)
+					if (res.json) {
+						if (res.json.id == 217369944 && !res.json.draft && res.json.assets.length > 2 && res.json.body && res.json.body.length > 0 && res.json.author.id == res.json.assets[0].uploader.id && res.json.author.id == 174283352) {
+							if (res.json.tag_name != this.manifest.version) {
+								new Notice(`QOL: An update is avalible! You can update by checking for updates in the community plugins tab. (${this.manifest.version}->${res.json.tag_name})`)
+							}
+						}
+					}
+				})
+			}
+		}, 6000) //lazy load
+
 		// const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 		// 	new Notice('This is a notice!')
 		// })
 		// ribbonIconEl.addClass('my-plugin-ribbon-class')
 
-		const statusBarItemEl = this.addStatusBarItem()
-		statusBarItemEl.setText('')
+		const NonSymbolCountText = this.addStatusBarItem()
+		NonSymbolCountText.setText('')
 		this.registerEvent(
 			this.app.workspace.on("editor-change", (_, i) => {
 				setTimeout(() => { //let file update also somewhat syncs with Obsidian's char count
@@ -202,9 +301,9 @@ export default class qolPlugin extends Plugin {
 						//@ts-ignore
 						let rl = i.data.replaceAll(/[A-Za-z]*/gm, "").length
 						//@ts-ignore
-						statusBarItemEl.setText((i.data.length - rl) + " non-symbols")
+						NonSymbolCountText.setText((i.data.length - rl) + " non-symbols")
 					} else {
-						statusBarItemEl.setText("")
+						NonSymbolCountText.setText("")
 					}
 				}, 100);
 			})
@@ -219,310 +318,348 @@ export default class qolPlugin extends Plugin {
 							if (str) {
 								//@ts-ignore
 								let rl = str.replaceAll(/[A-Za-z]*/gm, "").length
-								statusBarItemEl.setText((str.length - rl) + " non-symbols")
+								NonSymbolCountText.setText((str.length - rl) + " non-symbols")
 							}
 						}
 					}, 100);
 				} else {
-					statusBarItemEl.setText("")
+					NonSymbolCountText.setText("")
 				}
 			})
 		)
+
+
+		const WriteBreakTimerText = this.addStatusBarItem()
+		WriteBreakTimerText.setText('')
+
 		let fsOnEditor: Editor | undefined = undefined
-		let gramcorrect: string = ""
-		this.registerDomEvent(window, "keyup", (evt) => {
-			if (evt.key == " ") {
+		this.registerInterval(window.setInterval(() => {
+			if (this.settings.WriteTimer) {
 				let edit = this.app.workspace.activeEditor
-				if (edit && edit.editor) {
+				if (edit && edit.editor && edit.file && edit.editor.hasFocus()) {
+					if (USER_TIMINGS.writing.files[edit.file.path]) {
+						if (new Date().getTime() - USER_TIMINGS.writing.files[edit.file.path].lastKeyPress < 5000) {
+							USER_TIMINGS.writing.files[edit.file.path].writeTime++
+						} else {
+							USER_TIMINGS.writing.files[edit.file.path].breakTime++
+						}
+						USER_TIMINGS.writing.files[edit.file.path].totalTime++
+						//@ts-ignore
+						WriteBreakTimerText.setText(this.settings.WriteTimerFormat.replaceAll("%t", USER_TIMINGS.writing.files[edit.file.path].totalTime).replaceAll("%w", USER_TIMINGS.writing.files[edit.file.path].writeTime).replaceAll("%b", USER_TIMINGS.writing.files[edit.file.path].breakTime))
+					}
+				} else {
+					WriteBreakTimerText.setText("WriteTime:Cannot find a file.")
+				}
+			} else {
+				WriteBreakTimerText.setText("")
+			}
+		}, 1000))
+		this.registerDomEvent(window, "keydown", (evt) => {
+			let edit = this.app.workspace.activeEditor
+			if (edit && edit.editor && edit.file) {
+				if (edit.editor.hasFocus()) {
+					if (!USER_TIMINGS.writing.files[edit.file.path]) {
+						USER_TIMINGS.writing.files[edit.file.path] = { breakTime: 0, writeTime: 0, totalTime: 0, lastKeyPress: new Date().getTime() }
+					} else USER_TIMINGS.writing.files[edit.file.path].lastKeyPress = new Date().getTime()
+				}
+			}
+		})
+		this.registerDomEvent(window, "keyup", (evt) => {
+			let edit = this.app.workspace.activeEditor
+			if (edit && edit.editor && edit.file && edit.editor.hasFocus()) {
+				if (!USER_TIMINGS.writing.files[edit.file.path]) {
+					USER_TIMINGS.writing.files[edit.file.path] = { breakTime: 0, writeTime: 0, totalTime: 0, lastKeyPress: new Date().getTime() }
+				} else USER_TIMINGS.writing.files[edit.file.path].lastKeyPress = new Date().getTime()
+				if (evt.key == " ") {
+					if (edit && edit.editor) {
 
-					// 	switch (gramcorrect) {
-					// 		case "itll":
-					// 			let f = edit.editor.getCursor()
-					// 			let v = edit.editor.getCursor()
-					// 			v.ch -= 5
-					// 			f.ch--
-					// 			if (edit.editor.getRange(v, f) == "itll") {
-					// 				f.ch -= 2
-					// 				if (this.settings.GrammerFix) { edit.editor.replaceRange("'", f) }
-					// 			}
-					// 	}
-					if (this.settings.GrammerFix) {
-						let f = edit.editor.getCursor()
-						let v = edit.editor.getCursor()
-						v.ch -= 3
-						f.ch--
-						switch (edit.editor.getRange(v, f)) {
-							case "im":
-								f.ch--
-								edit.editor.replaceRange("I'", v, f)
-								f.ch++
-								break
-							case "Im":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "IM":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							// case "id":
-							// 	f.ch--
-							// 	edit.editor.replaceRange("I'", v, f)
-							// 	f.ch++
-							// 	break
-							// case "Id":
-							// 	f.ch--
-							// 	edit.editor.replaceRange("'", f)
-							// 	f.ch++
-							// 	break
-							// case "ID":
-							// 	f.ch--
-							// 	edit.editor.replaceRange("'", f)
-							// 	f.ch++
-							// 	break
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "hes":
-								f.ch--
-								edit.editor.replaceRange("'", v, f)
-								f.ch++
-								break
-							case "hed":
-								f.ch--
-								edit.editor.replaceRange("'", v, f)
-								f.ch++
-								break
-							case "itd":
-								f.ch--
-								edit.editor.replaceRange("'", v, f)
-								f.ch++
-								break
+						// 	switch (gramcorrect) {
+						// 		case "itll":
+						// 			let f = edit.editor.getCursor()
+						// 			let v = edit.editor.getCursor()
+						// 			v.ch -= 5
+						// 			f.ch--
+						// 			if (edit.editor.getRange(v, f) == "itll") {
+						// 				f.ch -= 2
+						// 				if (this.settings.GrammerFix) { edit.editor.replaceRange("'", f) }
+						// 			}
+						// 	}
+						if (this.settings.GrammerFix) {
+							let f = edit.editor.getCursor()
+							let v = edit.editor.getCursor()
+							v.ch -= 3
+							f.ch--
+							switch (edit.editor.getRange(v, f)) {
+								case "im":
+									f.ch--
+									edit.editor.replaceRange("I'", v, f)
+									f.ch++
+									break
+								case "Im":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "IM":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								// case "id":
+								// 	f.ch--
+								// 	edit.editor.replaceRange("I'", v, f)
+								// 	f.ch++
+								// 	break
+								// case "Id":
+								// 	f.ch--
+								// 	edit.editor.replaceRange("'", f)
+								// 	f.ch++
+								// 	break
+								// case "ID":
+								// 	f.ch--
+								// 	edit.editor.replaceRange("'", f)
+								// 	f.ch++
+								// 	break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "hes":
+									f.ch--
+									edit.editor.replaceRange("'", v, f)
+									f.ch++
+									break
+								case "hed":
+									f.ch--
+									edit.editor.replaceRange("'", v, f)
+									f.ch++
+									break
+								case "itd":
+									f.ch--
+									edit.editor.replaceRange("'", v, f)
+									f.ch++
+									break
 
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "itll":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "isnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "dont":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "wont":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "cant":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "whos":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "yall":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "maam":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "goin":
-								edit.editor.replaceRange("'", f)
-								break
-							case "doin":
-								edit.editor.replaceRange("'", f)
-								break
-							case "shes":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "youd":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "shed":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "itll":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "isnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "dont":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "wont":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "cant":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "whos":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "yall":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "maam":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "goin":
+									edit.editor.replaceRange("'", f)
+									break
+								case "doin":
+									edit.editor.replaceRange("'", f)
+									break
+								case "shes":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "youd":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "shed":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
 
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "youre":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "youll":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "wasnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "didnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "hadnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "shell":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "arent":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "hasnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "oclock":
-								f.ch -= 5
-								edit.editor.replaceRange("'", f)
-								f.ch += 5
-								break
-							case "doesnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "werent":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "mustve":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "mustnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "theyll":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "havent":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "neednt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "runnin":
-								edit.editor.replaceRange("'", f)
-								break
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "wouldnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "mightnt":
-								f.ch--
-								edit.editor.replaceRange("'", f)
-								f.ch++
-								break
-							case "couldve":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "wouldve":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "mightve":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-						}
-						v.ch--
-						switch (edit.editor.getRange(v, f).toLowerCase()) {
-							case "shouldve":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
-							case "shouldnt":
-								f.ch -= 2
-								edit.editor.replaceRange("'", f)
-								f.ch += 2
-								break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "youre":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "youll":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "wasnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "didnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "hadnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "shell":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "arent":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "hasnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "oclock":
+									f.ch -= 5
+									edit.editor.replaceRange("'", f)
+									f.ch += 5
+									break
+								case "doesnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "werent":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "mustve":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "mustnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "theyll":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "havent":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "neednt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "runnin":
+									edit.editor.replaceRange("'", f)
+									break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "wouldnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "mightnt":
+									f.ch--
+									edit.editor.replaceRange("'", f)
+									f.ch++
+									break
+								case "couldve":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "wouldve":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "mightve":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+							}
+							v.ch--
+							switch (edit.editor.getRange(v, f).toLowerCase()) {
+								case "shouldve":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+								case "shouldnt":
+									f.ch -= 2
+									edit.editor.replaceRange("'", f)
+									f.ch += 2
+									break
+							}
 						}
 					}
-				}
-				// gramcorrect = ""
+					// gramcorrect = ""
 
-			}
-			//  else {
-			// 	if (evt.key.length == 1 && !evt.altKey && !evt.ctrlKey) gramcorrect += evt.key.toLowerCase()
-			// 	if (evt.key == "Backspace") gramcorrect = gramcorrect.substring(0, gramcorrect.length - 1)
-			// }
-			if ((this.settings.AutoSpace || this.settings.AutoShift) && (evt.key == "." || evt.key == "။")) {
-				let edit = this.app.workspace.activeEditor
-				if (edit && edit.editor) {
-					fsOnEditor = edit.editor
 				}
-			} else if ((this.settings.AutoSpace || this.settings.AutoShift) && fsOnEditor && (evt.key.toUpperCase() != evt.key || evt.shiftKey) && evt.key.length == 1) {
-				let edit = this.app.workspace.activeEditor
-				if (edit && edit.editor && edit.editor == fsOnEditor) {
-					let m = edit.editor.getCursor()
-					let f = edit.editor.getCursor()
-					f.ch--
-					let n = edit.editor.getCursor()
-					n.ch -= 2
-					if (edit.editor.getRange(n, f) == ".") {
-						if (this.settings.AutoShift) { edit.editor.replaceRange(evt.key.toUpperCase(), f, m) }
-						if (this.settings.AutoSpace) edit.editor.replaceRange(" " + (this.settings.AutoSpace_Double ? " " : ""), f)
-						fsOnEditor = undefined
+				//  else {
+				// 	if (evt.key.length == 1 && !evt.altKey && !evt.ctrlKey) gramcorrect += evt.key.toLowerCase()
+				// 	if (evt.key == "Backspace") gramcorrect = gramcorrect.substring(0, gramcorrect.length - 1)
+				// }
+				if ((this.settings.AutoSpace || this.settings.AutoShift) && (evt.key == "." || evt.key == "။")) {
+					if (edit && edit.editor) {
+						fsOnEditor = edit.editor
+					}
+				} else if ((this.settings.AutoSpace || this.settings.AutoShift) && fsOnEditor && (evt.key.toUpperCase() != evt.key || evt.shiftKey) && evt.key.length == 1) {
+					if (edit && edit.editor && edit.editor == fsOnEditor) {
+						let m = edit.editor.getCursor()
+						let f = edit.editor.getCursor()
+						f.ch--
+						let n = edit.editor.getCursor()
+						n.ch -= 2
+						if (edit.editor.getRange(n, f) == ".") {
+							if (this.settings.AutoShift) { edit.editor.replaceRange(evt.key.toUpperCase(), f, m) }
+							if (this.settings.AutoSpace) edit.editor.replaceRange(" " + (this.settings.AutoSpace_Double ? " " : ""), f)
+							fsOnEditor = undefined
+						}
 					}
 				}
 			}
@@ -705,7 +842,7 @@ class qolSettingTab extends PluginSettingTab {
 
 		containerEl.empty()
 
-		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")
+		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Word Processing")
 		containerEl.createEl("hr", { cls: "qol-setting-sep" })
 		containerEl.createDiv({ text: "Many utilities while editing", cls: "qol-setting-desc" })
 		let proc = this.containerEl.createEl("details")
@@ -758,8 +895,35 @@ class qolSettingTab extends PluginSettingTab {
 					this.plugin.settings.GrammerFix = value
 					await this.plugin.saveSettings()
 				}))
+		let WBT: ToggleComponent | undefined = undefined
+		new Setting(proc)
+			.setName('Writing / Break timer')
+			.setDesc("Adds a timer in the status bar thats in the format you chose below")
+			.addToggle(bool => {
+				bool.setValue(this.plugin.settings.WriteTimer)
+					.onChange(async (value) => {
+						this.plugin.settings.WriteTimer = value
+						await this.plugin.saveSettings()
+					})
+				WBT = bool
+			})
+		new Setting(proc)
+			.setName('Writing Timer format:')
+			.setDesc("%t = total time; %w = writing time; %b = break time")
+			.addTextArea(text => text
+				.setValue(this.plugin.settings.WriteTimerFormat)
+				.onChange(async (value) => {
+					if (value.length > 1) {
+						this.plugin.settings.WriteTimerFormat = value
+						await this.plugin.saveSettings()
+					} else {
+						text.setValue(this.plugin.settings.WriteTimerFormat)
+						this.plugin.settings.WriteTimer = false
+						if (WBT) WBT.setValue(false)
+					}
+				}))
 
-		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")
+		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Recursive")
 		containerEl.createEl("hr", { cls: "qol-setting-sep" })
 		containerEl.createDiv({ text: "All of the recursive functions within qol. These will be more intensive depending on the amount of instructions. You can see the timecomplexity when it says O(n) or O(files) meaning it would have to do something on every file.", cls: "qol-setting-desc" })
 		let recurse = this.containerEl.createEl("details")
@@ -777,7 +941,7 @@ class qolSettingTab extends PluginSettingTab {
 		f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: "O(n file and folders)" }))
 
 
-		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")
+		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Misc")
 		containerEl.createEl("hr", { cls: "qol-setting-sep" })
 		containerEl.createDiv({ text: "A list of all of the settings that would not be worth creating a new tab for.", cls: "qol-setting-desc" })
 		let misc = this.containerEl.createEl("details")
@@ -793,7 +957,7 @@ class qolSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings()
 				}))
 
-		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")
+		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Touch Screen")
 		containerEl.createEl("hr", { cls: "qol-setting-sep" })
 		containerEl.createDiv({ text: "Contains support for computer touchscreens that are not already integrated in to Obsidian.", cls: "qol-setting-desc" })
 		let touch = this.containerEl.createEl("details")
@@ -845,5 +1009,25 @@ class qolSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings()
 				}))
 
+
+
+		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Plugin Settings")
+		containerEl.createEl("hr", { cls: "qol-setting-sep" })
+		containerEl.createDiv({ text: "Contains support for computer touchscreens that are not already integrated in to Obsidian.", cls: "qol-setting-desc" })
+		let config = this.containerEl.createEl("details")
+		config.createEl("summary", { text: "Plugin Config", title: "Config settings", cls: "qol-setting-title" })
+
+		f = new Setting(config)
+			.setName('Update checking')
+			.setDesc("When enabled you will receive a Notice every time the plugin needs an update.")
+			.addToggle(bool => {
+				bool.setValue(this.plugin.settings.UpdateChecking)
+					.onChange(async (value) => {
+						this.plugin.settings.UpdateChecking = value
+						await this.plugin.saveSettings()
+					})
+				TSF = bool
+			})
+		f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: "Sends an HTTPS request to github on startup to check for updates. Does not store any data. Has a cooldown of half an hour." }))
 	}
 }

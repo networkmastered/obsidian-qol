@@ -6,7 +6,8 @@ This plugin aims to add features to obsidian to make using it easier.
 
 *Notice:* All features are disabled by default, you can enable them in settings.
 
-  
+HTTPS:
+>    This plugin uses https on start to check for updates with github. No user data is transmitted.
 
 # How to install:
 

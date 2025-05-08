@@ -231,7 +231,6 @@ export default class qolPlugin extends Plugin {
 
 		setTimeout(() => {
 			if (new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
-				console.log("UPDATE REQUEST")
 				this.settings.LastUpdateCheck = new Date().getTime()
 				this.saveSettings()
 				// const req = new XMLHttpRequest()
@@ -274,7 +273,6 @@ export default class qolPlugin extends Plugin {
 				// })
 				// Ability to now access github api
 				requestUrl("https://api.github.com/repos/networkmastered/obsidian-qol/releases/latest").then((res) => {
-					console.log(res)
 					if (res.json) {
 						if (res.json.id == 217369944 && !res.json.draft && res.json.assets.length > 2 && res.json.body && res.json.body.length > 0 && res.json.author.id == res.json.assets[0].uploader.id && res.json.author.id == 174283352) {
 							if (res.json.tag_name != this.manifest.version) {

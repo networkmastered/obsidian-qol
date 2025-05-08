@@ -27,7 +27,8 @@ function GrabWorkspaceElement() {
 }
 
 let hooked: Array<Element> = []
-function HookTouchOnFiles(local_this: any) {
+//@ts-ignore
+function HookTouchOnFiles(local_this) {
 	let fm = GrabWorkspaceElement()
 	if (local_this.settings.TouchScreen && fm && fm.view && fm.view.files && fm.view.files.map) {
 		Object.keys(fm.view.fileItems).forEach((key) => {
@@ -172,7 +173,7 @@ export default class qolPlugin extends Plugin {
 				}
 			})
 		)
-		let fsOnEditor: any = undefined
+		let fsOnEditor: Editor|undefined = undefined
 		let gramcorrect: string = ""
 		this.registerDomEvent(window, "keyup", (evt) => {
 			if (evt.key == " ") {
@@ -655,7 +656,7 @@ class qolSettingTab extends PluginSettingTab {
 		let proc = this.containerEl.createEl("details")
 		proc.createEl("summary", { text: "Word Processing", title: "'Word Processing' settings", cls: "qol-setting-title" })
 
-		new Setting(proc)
+		let f = new Setting(proc)
 			.setName('Non-Symbol character count')
 			.addToggle(bool => bool
 				.setValue(this.plugin.settings.NonSymbChars)
@@ -663,8 +664,8 @@ class qolSettingTab extends PluginSettingTab {
 					this.plugin.settings.NonSymbChars = value
 					await this.plugin.saveSettings()
 				}))
-			.setDesc("Get how many characters youve typed without spaces,underscores,numbers,etc")
-			.descEl.innerHTML += "<p class='qol-setting-subtext'>O(characters)</p>"
+			.setDesc("Get how many characters youve typed without spaces,underscores,numbers,etc");
+		proc.createEl("p", {parent:f.descEl,cls:"qol-setting-subtext",text:"O(n of characters)"})
 		new Setting(proc)
 			.setName('Automatic space on period')
 			.setDesc("Automatically place a space whenever you press period. Occurs when typing next sentence.")
@@ -707,8 +708,8 @@ class qolSettingTab extends PluginSettingTab {
 		containerEl.createDiv({ text: "All of the recursive functions within qol. These will be more intensive depending on the amount of instructions. You can see the timecomplexity when it says O(n) or O(files) meaning it would have to do something on every file.", cls: "qol-setting-desc" })
 		let recurse = this.containerEl.createEl("details")
 		recurse.createEl("summary", { text: "Recursive", title: "Recursive settings", cls: "qol-setting-title" })
-
-		new Setting(recurse)
+		
+		f = new Setting(recurse)
 			.setName('Recursively expand/collapse folder')
 			.addToggle(bool => bool
 				.setValue(this.plugin.settings.ExpandFolder)
@@ -716,8 +717,8 @@ class qolSettingTab extends PluginSettingTab {
 					this.plugin.settings.ExpandFolder = value
 					await this.plugin.saveSettings()
 				}))
-			.setDesc("Right Click (or hold) on a folder and press 'Expand recursively' or 'Collapse recursively' to trigger.")
-			.descEl.innerHTML += "<p class='qol-setting-subtext'>O(n file and folders)</p>"
+			.setDesc("Right Click (or hold) on a folder and press 'Expand recursively' or 'Collapse recursively' to trigger.");
+		proc.createEl("p", {parent:f.descEl,cls:"qol-setting-subtext",text:"O(n file and folders)"})
 
 		////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")
 		containerEl.createEl("hr", { cls: "qol-setting-sep" })

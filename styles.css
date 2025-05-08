@@ -1,8 +1,18 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.qol-setting-sep {
+    border-color: #3636367e;
+    margin: 1rem 0;
+}
+.qol-setting-desc {
+    font-style: italic;
+    padding-bottom: 10px;
+}
+.qol-setting-title {
+    font-size: 2em;
+    font-weight: bold;
+}
+.qol-setting-subtext {
+    color: #ff9393;
+    font-style: italic;
+    position: relative;
+    top:-10px;
+}

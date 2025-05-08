@@ -41,6 +41,7 @@ function HookTouchOnFiles(local_this) {
 			let y = 0
 			let st = 0
 			let truestart = false
+			let wasActive = false
 			hooked.push(el)
 			local_this.registerEvent(
 				el.addEventListener("touchstart", (e: TouchEvent) => {
@@ -53,9 +54,18 @@ function HookTouchOnFiles(local_this) {
 			)
 			local_this.registerEvent(
 				el.addEventListener("touchmove", (e: TouchEvent) => {
-					if (!local_this.settings.TouchScreen) return
-					if (new Date().getTime() - st < 500) return
+					if (!local_this.settings.TouchScreen || !dragging) return
+					if (new Date().getTime() - st < 400) {
+						if(Math.abs(e.touches[0].clientY-y) > 100) {
+							x = 0
+							y = 0
+							dragging = false
+							st = 0
+						}
+						return
+					}
 					if (!truestart) {
+						if(el.hasClass("is-active")) wasActive = true
 						el.addClass("is-being-dragged")
 						el.parentElement.parentElement.parentElement.style.setProperty("overflow", "hidden")
 						truestart = true
@@ -117,6 +127,8 @@ function HookTouchOnFiles(local_this) {
 					el.style.removeProperty("right")
 					el.style.removeProperty("bottom")
 					el.removeClass("is-being-dragged")
+					if(wasActive) el.addClass("is-active")
+					wasActive = false
 					dragging = false
 					st = 0
 					truestart = false

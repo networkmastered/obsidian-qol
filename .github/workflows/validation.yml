@@ -3,7 +3,7 @@ name: Add Valid Labels
 on:
   issues:
     types: [opened]
-    
+
 permissions:
   issues: write
   contents: read
@@ -17,7 +17,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-              if(context.payload.issue.title.toLowerCase().startsWith("Feature")) {
+              if(context.payload.issue.title.toLowerCase().startsWith("feature")) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -30,7 +30,7 @@ jobs:
                 repo: context.repo.repo,
                 body: "Hello! Thank you for providing this feature! The developer will respond as soon as possible with a status!",
               });
-              } else if(context.payload.issue.title.toLowerCase().startsWith("Issue")) {
+              } else if(context.payload.issue.title.toLowerCase().startsWith("issue")) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

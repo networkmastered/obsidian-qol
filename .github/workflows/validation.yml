@@ -9,8 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Add label using github-script
-        uses: actions/setup-node@v2
+      - name: Add label using workflow
         uses: actions/github-script@v6
         with:
           script: |

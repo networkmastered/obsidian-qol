@@ -3,6 +3,10 @@ name: Add Valid Labels
 on:
   issues:
     types: [opened]
+    
+permissions:
+  issues: write
+  contents: read
 
 jobs:
   add-label:

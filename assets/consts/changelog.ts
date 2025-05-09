@@ -1,6 +1,6 @@
 export default {
     "1.3.0":
-        `#QOL(Quality of Life) (1.2.2):
+        `# QOL(Quality of Life) (1.3.0):
 Thank you for using Quality of Life!
 
 Updates:

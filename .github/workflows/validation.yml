@@ -1,0 +1,56 @@
+name: Add Valid Labels
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add label using github-script
+        uses: actions/setup-node@v2
+        uses: actions/github-script@v6
+        with:
+          script: |
+            if(context.payload.issue.title.toLowerCase().startsWith("Feature")) {
+              await github.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['enhancement']
+              });
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "Hello! Thank you for providing this feature! The developer will respond as soon as possible with a status!",
+              });
+            } elseif(context.payload.issue.title.toLowerCase().startsWith("Issue")) {
+              await github.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['bug']
+              });
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "Hello! Im sorry about you encountering this issue. However, thank you for reporting it! The developer will respond as soon as possible with a status!",
+              });
+            } else {
+              await github.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['invalid']
+              });
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "Hello! Please set the title to have 'Feature:' or 'Issue:'",
+              });
+            }

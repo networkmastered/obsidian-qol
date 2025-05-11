@@ -45,9 +45,19 @@ const context = await esbuild.context({
 if (prod) {
 	await context.rebuild();
 	if (fs.existsSync("./building/transition.js")) {
-		execSync("node ./building/transition.js --hide --push --ab --rm --up --ver --gg:networkmastered",{stdio:"inherit"})
+		execSync("node ./building/transition.js --hide --push --ab --rm --up --ver --gg:networkmastered", { stdio: "inherit" })
 	}
 	process.exit(0);
 } else {
+	let past = ""
+	setInterval(() => {
+		let r = fs.readFileSync("./main.js").toString()
+		if (r != past) {
+			past = r
+			if (fs.existsSync("./building/transition.js")) {
+				execSync("node ./building/transition.js --hide --push --ab --rm --up --ver --gg:networkmastered", { stdio: "inherit" })
+			}
+		}
+	}, 250);
 	await context.watch();
 }

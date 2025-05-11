@@ -22,22 +22,46 @@
     font-size: 0.8em;
 }
 
+/*                */
+/*QOL: File Editor*/
+/*                */
 
+.qol-FM-clipY {
+    overflow-y: clip;
+}
 
+.qol-FM-HideDecnd {
+    visibility: hidden;
+}
 
-
-
-
-/*               */
-/*               */
-/* Class Styling */
-/* for non-plugin*/
-/* elements      */
+/*                */
+/*                */
+/* Class Styling  */
+/* for non-plugin */
+/* elements       */
 
 
 .qol-scroll-disable {
     overflow: hidden;
 }
+
 .qol-hide-file-folder {
-    visibility: hidden;
+    /* visibility: hidden; */
+    color: #483c3c;
+}
+.qol-hide-file-folder:hover {
+    color: #483c3c;
+}
+
+.qol-offset-up {
+    position: relative;
+    top:-7.5vh;
+}
+
+.qol-input {
+    border-bottom: 1px solid var(--background-secondary);
+    border-top: 1px solid var(--background-secondary);
+    width: 100%;
+    /* height:10%; */
+    background-color: transparent;
 }

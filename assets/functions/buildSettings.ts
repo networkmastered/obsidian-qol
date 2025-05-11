@@ -15,6 +15,8 @@ export default class qolSettingTab extends PluginSettingTab {
 
         containerEl.empty()
 
+        containerEl.createEl("p", { cls: "qol-setting-p" }).innerHTML = Dict("CONTRIBUTE")
+
         ////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Word Processing")
         containerEl.createEl("hr", { cls: "qol-setting-sep" })
         containerEl.createDiv({ text: Dict("SETTINGS_WORD_PROCESSING_DESC"), cls: "qol-setting-desc" })
@@ -29,7 +31,6 @@ export default class qolSettingTab extends PluginSettingTab {
                     this.plugin.settings.NonSymbChars = value
                     await this.plugin.saveSettings()
                 }))
-            // .setDesc("Get how many characters youve typed without spaces,underscores,numbers,etc");
             .setDesc(Dict("SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_DESC"))
         f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: "O(n of characters)" }))
 
@@ -199,7 +200,44 @@ export default class qolSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings()
                 }))
 
+        ////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp File Manager")
+        containerEl.createEl("hr", { cls: "qol-setting-sep" })
+        containerEl.createDiv({ text: Dict("SETTINGS_FILE_EXPLORER_DESC"), cls: "qol-setting-desc" })
+        let FileM = this.containerEl.createEl("details")
+        FileM.createEl("summary", { text: Dict("SETTINGS_FILE_EXPLORER_TITLE")+"[BETA]", title: Dict("SETTINGS_FILE_EXPLORER_TITLE") + " settings", cls: "qol-setting-title" })
 
+        new Setting(FileM)
+            .setName(Dict("SETTINGS_FILE_EXPLORER_ENABLED_TITLE"))
+            .setDesc(Dict("SETTINGS_FILE_EXPLORER_ENABLED_DESC"))
+            .addToggle(bool => bool
+                .setValue(this.plugin.settings.FM_Enabled)
+                .onChange(async (value) => {
+                    this.plugin.settings.FM_Enabled = value
+                    await this.plugin.saveSettings()
+                    
+                    if (!value) {this.app.workspace.trigger("qol-remotes-kill-workspace")} else this.plugin.FileExplorerTrigger()
+                })
+            )
+        new Setting(FileM)
+            .setName(Dict("SETTINGS_FILE_EXPLORER_WARNINGS_TITLE"))
+            .setDesc(Dict("SETTINGS_FILE_EXPLORER_WARNINGS_DESC"))
+            .addToggle(bool => bool
+                .setValue(this.plugin.settings.FM_Deletion_Warning)
+                .onChange(async (value) => {
+                    this.plugin.settings.FM_Deletion_Warning = value
+                    await this.plugin.saveSettings()
+                })
+            )
+        new Setting(FileM)
+            .setName(Dict("SETTINGS_FILE_EXPLORER_REFRESHER_TITLE"))
+            .setDesc(Dict("SETTINGS_FILE_EXPLORER_REFRESHER_DESC"))
+            .addToggle(bool => bool
+                .setValue(this.plugin.settings.FM_Full_Refreshing)
+                .onChange(async (value) => {
+                    this.plugin.settings.FM_Full_Refreshing = value
+                    await this.plugin.saveSettings()
+                })
+            )
 
         ////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Plugin Settings")
         containerEl.createEl("hr", { cls: "qol-setting-sep" })

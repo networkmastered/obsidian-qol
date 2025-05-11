@@ -1,14 +1,16 @@
-import { Editor, MarkdownView, Notice, Plugin, requestUrl } from 'obsidian'
+import { Editor, MarkdownView, Notice, Plugin, requestUrl, setTooltip, WorkspaceLeaf } from 'obsidian'
 import changelog from './assets/consts/changelog'
 import settings from './assets/functions/buildSettings'
 import markdownModal from './assets/functions/viewMarkDown'
 import HookTouchOnFiles from "./assets/functions/TouchScreenHook"
 import GrammerFixesInit from "./assets/functions/GrammerFixes"
+import { classN, FileExplorer, visible } from "./assets/functions/fileExplorer"
+
 
 import Dict from "./assets/language/LanguageSelector"
 
 
-interface qolSettings {
+export interface qolSettings {
 	//Public Settings
 	ExpandFolder: boolean
 	FunctionBypass: boolean
@@ -33,6 +35,12 @@ interface qolSettings {
 	//Private Settings
 	LastUpdateCheck: number
 	LastUpdateLog: string
+
+
+	//File Manager/Explorer
+	FM_Enabled: boolean
+	FM_Deletion_Warning: boolean
+	FM_Full_Refreshing: boolean
 }
 
 const DEFAULT_SETTINGS: qolSettings = {
@@ -59,7 +67,13 @@ const DEFAULT_SETTINGS: qolSettings = {
 
 	// Private Settings
 	LastUpdateCheck: 0,
-	LastUpdateLog: "0.0.0"
+	LastUpdateLog: "0.0.0",
+
+
+	// File Manager/Explorer
+	FM_Enabled: true,
+	FM_Deletion_Warning: true,
+	FM_Full_Refreshing: false,
 }
 
 export let USER_TIMINGS:
@@ -77,17 +91,50 @@ export let USER_TIMINGS:
 	}
 }
 
+export let mainSettings: qolSettings | undefined = undefined
+
 export function GrabWorkspaceElement() {
 	return this.app.workspace.getLeavesOfType('file-explorer')[0] || undefined
 }
 
 export default class qolPlugin extends Plugin {
 	settings: qolSettings
-
+	async FileExplorerTrigger() {
+		const { workspace } = this.app;
+		const leaf = workspace.getLeftLeaf(false);
+		if (leaf) {
+			await leaf.setViewState({
+				type: classN,
+				active: true,
+			});
+			workspace.revealLeaf(leaf);
+		}
+	}
 	async onload() {
 		await this.loadSettings()
-
+		mainSettings = this.settings
 		Dict("", this.settings.Language) // initilise cache
+
+		this.registerView(
+			classN,
+			//@ts-ignore
+			(leaf: WorkspaceLeaf) => {
+				if (visible) { return new FileExplorer(leaf, true) }
+				return new FileExplorer(leaf)
+			}
+		)
+
+		// let qolFMB = this.addRibbonIcon('book-plus', Dict("FILE_EXPLORER_ICON_HOVER"), () => {
+		// 	this.FileExplorerTrigger();
+		// });
+		if (this.settings.FM_Enabled) {
+			setTimeout(() => {
+				this.FileExplorerTrigger();
+			}, 500)
+		}
+		// setCB(() => {
+		// 	if (visible) { qolFMB.addClass("qol-hide-file-folder"); setTooltip(qolFMB, Dict("FILE_EXPLORER_ICON_HOVER_DISABLED")) } else { qolFMB.removeClass("qol-hide-file-folder"); setTooltip(qolFMB, Dict("FILE_EXPLORER_ICON_HOVER")) }
+		// })
 
 		GrammerFixesInit(this)
 
@@ -230,7 +277,8 @@ export default class qolPlugin extends Plugin {
 		this.addSettingTab(new settings(this.app, this))
 
 		this.registerEvent(
-			this.app.workspace.on("file-menu", (menu, file) => {
+			this.app.workspace.on("file-menu", (menu, file, whotrig) => {
+				if (whotrig == "qol-triggered") return;
 				//@ts-ignore
 				if (file && !file.extension && this.settings.ExpandFolder) {
 					menu.addItem((item) => {

@@ -1,11 +1,20 @@
 import English from "./english"
 
-const langs: { [key: string]: {["parser"]:Function,["name"]:string} } = {
-    "EN": {parser:English,name:"English"} //TRUNC NAME: {parser:FUNC,name:LocalEName}
+
+const langs: { [key: string]: { ["parser"]: Function, ["name"]: string } } = {
+    "EN": { parser: English, name: "English" }, //TRUNC NAME: {parser:FUNC,name:LocalEName}
 }
 
-let cache = "EN"
 
+
+
+
+
+
+
+
+
+let cache = "EN"
 export default (key: (
     "" |
     "TITLE" |
@@ -47,16 +56,31 @@ export default (key: (
     "SETTINGS_PLUGIN_DESC" |
     "SETTINGS_PLUGIN_UPDATE_CHECK_TITLE" |
     "SETTINGS_PLUGIN_UPDATE_CHECK_DESC" |
-    "SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB"|
-    "SETTINGS_PLUGIN_LANGUAGE_TITLE"|
+    "SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB" |
+    "SETTINGS_PLUGIN_LANGUAGE_TITLE" |
     "SETTINGS_PLUGIN_LANGUAGE_DESC" |
     "SETTINGS_PLUGIN_CHANGELOG_TITLE" |
-    "SETTINGS_PLUGIN_CHANGELOG_DESC"
+    "SETTINGS_PLUGIN_CHANGELOG_DESC" |
+    "FILE_EXPLORER_ICON_HOVER" |
+    "FILE_EXPLORER_ICON_HOVER_DISABLED" |
+    "FILE_EXPLORER_CONTEXT_FILE" |
+    "FILE_EXPLORER_CONTEXT_FOLDER" |
+    "FILE_EXPLORER_VIEW_TITLE" |
+    "FILE_EXPLORER_CONTEXT_ITEMS" |
+    "SETTINGS_FILE_EXPLORER_TITLE" |
+    "SETTINGS_FILE_EXPLORER_DESC" |
+    "SETTINGS_FILE_EXPLORER_ENABLED_TITLE" |
+    "SETTINGS_FILE_EXPLORER_ENABLED_DESC" |
+    "SETTINGS_FILE_EXPLORER_WARNINGS_TITLE" |
+    "SETTINGS_FILE_EXPLORER_WARNINGS_DESC" |
+    "SETTINGS_FILE_EXPLORER_REFRESHER_TITLE" |
+    "SETTINGS_FILE_EXPLORER_REFRESHER_DESC" |
+    "CONTRIBUTE"
 ), userLanguage?: undefined | string): string => {
     if (userLanguage == "LANG") {
         let out = "English"
         Object.keys(langs).forEach((l) => {
-            if(l==key) out = langs[l].name
+            if (l == key) out = langs[l].name
         })
         return out
     }

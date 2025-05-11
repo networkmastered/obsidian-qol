@@ -1,6 +1,10 @@
 
 
 const strings: { [key: string]: string } = {
+
+    //SETTINGS
+    "CONTRIBUTE": "if you have any issues or features please report the <a href='https://github.com/networkmastered/obsidian-qol/issues/new'>here</a>. You can also help contribute to the plugin or language support <a href='https://github.com/networkmastered/obsidian-qol/'>here</a>.", //ihtm
+
     "TITLE": "QOL - quality of life",
     "DESC": "Adds several improvements and fixes to Obsidian.",
 
@@ -60,12 +64,43 @@ const strings: { [key: string]: string } = {
     "SETTINGS_PLUGIN_UPDATE_CHECK_DESC": "When enabled you will receive a Notice every time the plugin needs an update.",
     "SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB": "Sends an HTTPS request to github on startup to check for updates. Does not store any data. Has a cooldown of half an hour.",
 
-    "SETTINGS_PLUGIN_LANGUAGE_TITLE":"Global plugin language",
-    "SETTINGS_PLUGIN_LANGUAGE_DESC":"This is the language that will be set throughout the plugin.",
+    "SETTINGS_PLUGIN_LANGUAGE_TITLE": "Global plugin language",
+    "SETTINGS_PLUGIN_LANGUAGE_DESC": "This is the language that will be set throughout the plugin.",
 
-    "SETTINGS_PLUGIN_CHANGELOG_TITLE":"ChangeLog on update/start",
-    "SETTINGS_PLUGIN_CHANGELOG_DESC":"See whats added to the plugin when its updated.",
+    "SETTINGS_PLUGIN_CHANGELOG_TITLE": "ChangeLog on update/start",
+    "SETTINGS_PLUGIN_CHANGELOG_DESC": "See whats added to the plugin when its updated.",
+
+    "SETTINGS_FILE_EXPLORER_TITLE": "File explorer",
+    "SETTINGS_FILE_EXPLORER_DESC": "A custom file explorer that implaments some new features. The new file explorer will be opened at the right like the original file explorer. The file explorer cannot be closed. Please disable the setting instead",
+    "SETTINGS_FILE_EXPLORER_ENABLED_TITLE": "Enable file explorer",
+    "SETTINGS_FILE_EXPLORER_ENABLED_DESC": "If disabled, you can close the QOL File explorer by rightclicking the book with plus at the top and pressing 'Close'. Or reload Obsidian.",
+    
+    "SETTINGS_FILE_EXPLORER_WARNINGS_TITLE": "Deletion warning",
+    "SETTINGS_FILE_EXPLORER_WARNINGS_DESC": "When deleting a file you will receive a message asking if you would like to delete it. Disabling this removes that. This can be disabled by the checkbox within the prompt.",
+    "SETTINGS_FILE_EXPLORER_REFRESHER_TITLE": "Full tree reloading",
+    "SETTINGS_FILE_EXPLORER_REFRESHER_DESC": "Every time a change is made it will reload the entire view. Else it will only change what was changed",
+
+    // FILE EXPLORER
+
+    "FILE_EXPLORER_ICON_HOVER": "QOL: File explorer",
+    "FILE_EXPLORER_ICON_HOVER_DISABLED": "QOL: File explorer(already open!)",
+
+    // {FILE_EXPLORER_CONTEXT_FILE}\n[size]
+    "FILE_EXPLORER_CONTEXT_FILE": "File",
+    // {FILE_EXPLORER_CONTEXT_FILE}\n[itemCount] {FILE_EXPLORER_CONTEXT_ITEMS}
+    "FILE_EXPLORER_CONTEXT_FOLDER": "Folder",
+    "FILE_EXPLORER_CONTEXT_ITEMS": "Items",
+
+    "FILE_EXPLORER_VIEW_TITLE": "QOL file explorer",
 }
+
+
+
+
+
+
+
+
 
 export default (key: string) => {
     if (key && strings[key]) {

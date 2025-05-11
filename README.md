@@ -2,7 +2,7 @@
 
   
 
-This plugin aims to add features to obsidian to make using it easier.
+This plugin aims to add features to Obsidian to make using it easier to use.
 
 *Notice:* All features are disabled by default, you can enable them in settings.
 
@@ -33,7 +33,7 @@ Once you have downloaded the files:
 
 - place the 3 files you downloaded into the folder you have created
 
-- save obsidian and reload
+- save Obsidian and reload
 
 - then you should be able to configure it in settings
 

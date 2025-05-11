@@ -1,5 +1,6 @@
 //@ts-ignore
-import * as icos from './lucid-svgs';
+import * as icos from './lucid-svgs-compress';
+// import * as icos from './lucid-svgs';
 export function createEl(el: Element, type: ("svg"), cnt?: string, cls?: string, attr?: { [key: string]: string | number | boolean | null }, cls2?: string, attr2?: { [key: string]: string | number | boolean | null }): Element {
     if (type == "svg") {
         // let svg = el.createSvg("svg")
@@ -22,11 +23,16 @@ export function createEl(el: Element, type: ("svg"), cnt?: string, cls?: string,
         // svg.setAttribute("stroke-linecap", "round")
         // svg.setAttribute("stroke-linejoin", "round")
         // // if (cnt) pth.setAttribute("d", cnt)
-        if (cnt && icos[cnt]) {
-            let svg = icos.createElement(icos[cnt])
+        //@ts-ignore
+
+        if (cnt && icos.icons[cnt]) {
+            //@ts-ignore
+            let svg = icos.createElement(icos.icons[cnt])
             el.appendChild(svg)
             if (cls) svg.addClasses(cls.split(" "))
             return svg
+        } else {
+            console.warn(cnt,"icon does not exist.")
         }
     }
     return el

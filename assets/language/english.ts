@@ -13,6 +13,7 @@ const strings: { [key: string]: string } = {
 
     "SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_TITLE": "Non-Symbol character count",
     "SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_DESC": "Get how many characters youve typed without spaces,underscores,numbers,etc",
+    "SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_SUB": "O(n of characters)",
 
     "SETTINGS_WORD_PROCESSING_AUTO_SPACE_TITLE": "Automatic space on period",
     "SETTINGS_WORD_PROCESSING_AUTO_SPACE_DESC": "Automatically place a space whenever you press period. Occurs when typing next sentence.",
@@ -24,7 +25,7 @@ const strings: { [key: string]: string } = {
     "SETTINGS_WORD_PROCESSING_AUTO_SHIFT_DESC": "Starts each new sentence with a capital letter.",
 
     "SETTINGS_WORD_PROCESSING_GRAMMER_TITLE": "Automatic grammer tweaks",
-    "SETTINGS_WORD_PROCESSING_GRAMMER_DESC": "turns itll -> it'll. Will not change the following: i(')d,he(')ll,we(')re as theres no contextualization.",
+    "SETTINGS_WORD_PROCESSING_GRAMMER_DESC": "changes itll -> it'll. Will not change the following: i(')d,he(')ll,we(')re as theres no contextualization.",
 
     "SETTINGS_WORD_PROCESSING_WRITE_TIMER_TITLE": "Writing / Break timer",
     "SETTINGS_WORD_PROCESSING_WRITE_TIMER_DESC": "Adds a timer in the status bar thats in the format you chose below",
@@ -53,15 +54,16 @@ const strings: { [key: string]: string } = {
 
     "SETTINGS_TOUCH_SCREEN_FILE_DRAG_TITLE": "Touchscreen - File dragging",
     "SETTINGS_TOUCH_SCREEN_FILE_DRAG_DESC": "Enables the ability to drag files within the filetree using a touchscreen.",
+    "SETTINGS_TOUCH_SCREEN_FILE_DRAG_SUB": "binds: (n file and folders * 3)",
 
-    "SETTINGS_TOUCH_SCREEN_FILE_DRAG_ROOT_WARN_TITLE": "Touchscreen - File Dragging: Root warnings",
+    "SETTINGS_TOUCH_SCREEN_FILE_DRAG_ROOT_WARN_TITLE": "Touchscreen - File dragging: Root warnings",
     "SETTINGS_TOUCH_SCREEN_FILE_DRAG_ROOT_WARN_DESC": "Whenever moving a file in to root it will confirm if you want to continue or cancel the operation.",
 
     "SETTINGS_PLUGIN_TITLE": "Plugin config",
     "SETTINGS_PLUGIN_DESC": "Settings to change internal features.",
 
     "SETTINGS_PLUGIN_UPDATE_CHECK_TITLE": "Update checking",
-    "SETTINGS_PLUGIN_UPDATE_CHECK_DESC": "When enabled you will receive a Notice every time the plugin needs an update.",
+    "SETTINGS_PLUGIN_UPDATE_CHECK_DESC": "When enabled you will receive a Notice every time the plugin has an update.",
     "SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB": "Sends an HTTPS request to github on startup to check for updates. Does not store any data. Has a cooldown of half an hour.",
 
     "SETTINGS_PLUGIN_LANGUAGE_TITLE": "Global plugin language",
@@ -92,6 +94,37 @@ const strings: { [key: string]: string } = {
     "FILE_EXPLORER_CONTEXT_ITEMS": "Items",
 
     "FILE_EXPLORER_VIEW_TITLE": "QOL file explorer",
+    "FILE_EXPLORER_VIEW_WARN": "Please disable QOL file explorer in the plugin's settings.",
+
+    "FILE_EXPLORER_CREATE_FOLDER": "# Enter quantity:\n&nbsp\n&nbsp\n&nbsp",
+    "FILE_EXPLORER_CREATE_FOLDER_CONTENT": "Create folders:",
+    "FILE_EXPLORER_CREATE_FOLDER_CONTEXT": "Create multiple",
+    "FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR": "Cannot create over 100 folders at a time. Cancelled",
+    "FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER": "Please enter a number. Cancelled",
+    "FILE_EXPLORER_CREATE_FOLDER_MULTPLE_PLACEHOLDER": "Qnt: 1-100 enter a number or 'New folder [AMT]'",
+
+    "FILE_EXPLORER_RENAME": "# Rename '**{{name}}**':\n&nbsp",
+    "FILE_EXPLORER_RENAME_ACTION": "Rename",
+    "FILE_EXPLORER_RENAME_CONTENT": "New name:",
+
+    "FUNC_NEW_FILE": "New Note",
+    "FUNC_NEW_FOLDER": "New folder",
+    "FUNC_SCROLL_TO_ACTIVE": "Scroll to active file",
+    "FUNC_EXPAND_ALL": "Expand all",
+    "FUNC_COLLAPSE_ALL": "Collapse all",
+    "FUNC_DELETE": "Delete",
+    "FUNC_DELETE_WARN_TITLE":"# Move to trash\n&nbsp\nAre you sure you want to delete '**{file}**'\n\nIt will be moved to your **system trash**.\n\n",
+    "FUNC_DELETE_WARN_CONTENT":"Move to trash",
+    "FUNC_DELETE_ACTION":"Delete",
+    "FUNC_DELETE_DONTSOHW":"Don't show again",
+
+
+    "CANCEL":"Cancel",
+    "CONFIRM":"Confirm",
+
+    //Must support Obsidian's file/folder naming:
+
+    "FILE_EXPLORER_NEW_FILE": "Untitiled",
 }
 
 

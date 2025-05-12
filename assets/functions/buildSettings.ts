@@ -32,7 +32,7 @@ export default class qolSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings()
                 }))
             .setDesc(Dict("SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_DESC"))
-        f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: "O(n of characters)" }))
+        // f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: Dict("SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_SUB") }))
 
         new Setting(proc)
             .setName(Dict("SETTINGS_WORD_PROCESSING_AUTO_SPACE_TITLE"))
@@ -181,7 +181,7 @@ export default class qolSettingTab extends PluginSettingTab {
                     })
                 TSF = bool
             })
-        f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: "binds: (n file and folders * 3)" }))
+        // f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: Dict("SETTINGS_TOUCH_SCREEN_FILE_DRAG_SUB") }))
         new Setting(touch)
             .setName(Dict("SETTINGS_TOUCH_SCREEN_FILE_DRAG_ROOT_WARN_TITLE"))
             .setDesc(Dict("SETTINGS_TOUCH_SCREEN_FILE_DRAG_ROOT_WARN_DESC"))
@@ -256,7 +256,7 @@ export default class qolSettingTab extends PluginSettingTab {
                     })
                 TSF = bool
             })
-        f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: Dict("SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB") }))
+        // f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: Dict("SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB") }))
 
         f = new Setting(config)
             .setName(Dict("SETTINGS_PLUGIN_LANGUAGE_TITLE"))

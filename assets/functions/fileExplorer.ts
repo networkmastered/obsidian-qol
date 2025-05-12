@@ -75,8 +75,8 @@ export class FileExplorer extends ItemView {
         //@ts-ignore
         this.app.workspace.on("qol-remotes-kill-workspace", () => {
             //does absolutly nothing
-            this.canLoad = false
-            this.unload(true)
+            // this.canLoad = false
+            // this.unload(true)
         })
     }
     getViewType() { return classN }
@@ -112,32 +112,32 @@ export class FileExplorer extends ItemView {
         this.container.empty()
         this.container.createDiv({ cls: "nav-header" }, (el) => {
             el.createDiv({ cls: "nav-buttons-container" }, (tb) => {
-                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": "New Note" } }, (bt) => {
+                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": Dict("FUNC_NEW_FILE") } }, (bt) => {
                     setTooltip(bt, bt.getAttribute("aria-label") || "")
                     createEl(bt, "svg", "Edit", "svg-icon lucide-edit")
                     bt.addEventListener("click", (ev) => {
                         let i = 0
                         while (true) {
-                            let prbe = this.app.vault.getFileByPath("Untitled" + (i > 0 ? " " + i : "") + ".md")
+                            let prbe = this.app.vault.getFileByPath(Dict("FILE_EXPLORER_NEW_FILE") + (i > 0 ? " " + i : "") + ".md")
                             if (!prbe) break
                             i++
                         }
-                        this.app.vault.create("Untitled" + (i > 0 ? " " + i : "") + ".md", "").then((file) => {
-                            this.tree["Untitled" + (i > 0 ? " " + i : "") + ".md"] = { path: file.path, t: "file", stats: file.stat, ext: file.extension, TFile: file }
+                        this.app.vault.create(Dict("FILE_EXPLORER_NEW_FILE") + (i > 0 ? " " + i : "") + ".md", "").then((file) => {
+                            this.tree[Dict("FILE_EXPLORER_NEW_FILE") + (i > 0 ? " " + i : "") + ".md"] = { path: file.path, t: "file", stats: file.stat, ext: file.extension, TFile: file }
                             this.rebuildGUI()
                         })
                     })
                 })
 
-                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": "New Folder" } }, (bt) => {
+                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": Dict("FUNC_NEW_FOLDER") } }, (bt) => {
                     setTooltip(bt, bt.getAttribute("aria-label") || "")
                     createEl(bt, "svg", "FolderPlus", "svg-icon lucide-folder-plus")
                     bt.addEventListener("click", async (ev) => {
                         let amt = 0
-                        let sn = "Untitled"
+                        let sn = Dict("FILE_EXPLORER_NEW_FILE")
                         if (ev.altKey) {
                             await new Promise((r) => {
-                                let self = new ConfirmationPrompt(this.app, "# Enter Quantity:\n&nbsp\n&nbsp\n&nbsp", "Fold Qnt", [["Confirm", "mod-submit"], ["Cancel", "mod-cancel"]], undefined, "New Name:", "", (result: number, _: boolean, rn: string) => {
+                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_CREATE_FOLDER"), Dict("FILE_EXPLORER_CREATE_FOLDER_CONTEXT"), [[Dict("CONFIRM"), "mod-submit"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_CREATE_FOLDER_CONTENT"), "", (result: number, _: boolean, rn: string) => {
                                     if (parseInt(rn.split(" ")[rn.split(" ").length - 1])) {
                                         if (rn && rn.length > 0 && parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])) {
                                             let i = parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])
@@ -145,10 +145,10 @@ export class FileExplorer extends ItemView {
                                                 amt = i
                                                 sn = rn.trim().substring(0, rn.trim().length - (rn.trim().split(" ")[rn.trim().split(" ").length - 1].length + 1))
                                             } else {
-                                                new Notice("It's not reccomended to create over 100 folders at a time.")
+                                                new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
                                             }
                                         } else {
-                                            new Notice("Please enter a number. Cancelled")
+                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
                                         }
                                     } else {
                                         if (rn && rn.length > 0 && parseInt(rn.trim())) {
@@ -156,15 +156,15 @@ export class FileExplorer extends ItemView {
                                             if (i <= 100) {
                                                 amt = i
                                             } else {
-                                                new Notice("It's not reccomended to create over 100 folders at a time.")
+                                                new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
                                             }
                                         } else {
-                                            new Notice("Please enter a number. Cancelled")
+                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
                                         }
                                     }
                                     self.close()
                                     r(true)
-                                }, "Qnt: 1-100 enter a number or New Folder Qnt (Untitled 5)")
+                                }, Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_PLACEHOLDER"))
                                 self.open()
                             })
                         } else {
@@ -180,13 +180,12 @@ export class FileExplorer extends ItemView {
                             }
                             await this.app.vault.createFolder(sn + (i > 0 ? " " + i : "")).then((fol) => this.rebuildGUI())
                             this.tree[sn + (i > 0 ? " " + i : "")] = { children: {}, t: "folder", collapsed: true }
-                            console.log("created")
                         }
                         this.rebuildGUI()
                     })
                 })
 
-                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": "Expand All" } }, (bt) => {
+                tb.createDiv({ cls: "clickable-icon nav-action-button", attr: { "role": "button", "aria-label": Dict(this.expandState ? "FUNC_EXPAND_ALL" : "FUNC_COLLAPSE_ALL") } }, (bt) => {
                     setTooltip(bt, bt.getAttribute("aria-label") || "")
                     let svgico = createEl(bt, "svg", (this.expandState ? "ChevronsUpDown" : "ChevronsDownUp"), "svg-icon lucide-chevrons-down-up")
                     bt.addEventListener("click", (ev) => {
@@ -214,7 +213,7 @@ export class FileExplorer extends ItemView {
                     })
                 })
 
-                tb.createDiv({ cls: "clickable-icon nav-action-button" + (this.scrollToActive ? " is-active" : ""), attr: { "role": "button", "aria-label": "Scroll to active file" } }, (bt) => {
+                tb.createDiv({ cls: "clickable-icon nav-action-button" + (this.scrollToActive ? " is-active" : ""), attr: { "role": "button", "aria-label": Dict("FUNC_SCROLL_TO_ACTIVE") } }, (bt) => {
                     setTooltip(bt, bt.getAttribute("aria-label") || "")
                     let svgico = createEl(bt, "svg", "GalleryVertical", "svg-icon lucide-gallery-vertical")
                     bt.addEventListener("click", (ev) => {
@@ -236,14 +235,19 @@ export class FileExplorer extends ItemView {
                         let FM = new Menu()
                         FM.addSeparator()
                         FM.addItem((item) => {
-                            item.setIcon("edit-3").setTitle("Rename").onClick((ev) => {
-                                let self = new ConfirmationPrompt(this.app, "# Rename '**" + attr + "**':\n&nbsp", "Rename", [["Rename", "mod-rename"], ["Cancel", "mod-cancel"]], undefined, "New Name:", attr, (result: number, _: boolean, rn: string) => {
-                                    if (result == 0) {
+                            item.setIcon("edit-3").setTitle(Dict("FILE_EXPLORER_RENAME_ACTION")).onClick((ev) => {
+                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}",attr), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr, (result: number, _: boolean, rn: string) => {
+                                    if (result == 0 && attr != rn) {
                                         self.markd = ""
                                         let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
                                         if (abs) this.app.vault.rename(abs, rel + (rel.length > 0 ? "/" : "") + rn)
                                         if (title) title.childNodes[0].textContent = rn
+                                        let s = lodir[attr]
+                                        lodir[rn] = s
+                                        lodir[attr] = undefined
+                                        attr = rn
                                         self.close()
+                                        if (settingscope && settingscope.FM_Full_Refreshing) this.rebuildGUI()
                                     } else {
                                         self.markd = ""
                                         self.close()
@@ -253,19 +257,20 @@ export class FileExplorer extends ItemView {
                             })
                         })
                         FM.addItem((item) => {
-                            item.setIcon("trash-2").setTitle("Delete").onClick((ev) => {
+                            item.setIcon("trash-2").setTitle(Dict("FUNC_DELETE")).onClick((ev) => {
                                 if (settingscope && !settingscope.FM_Deletion_Warning) {
                                     let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
                                     if (abs) this.app.vault.trash(abs, true)
                                     if (mel) mel.remove()
                                 } else {
-                                    let self = new ConfirmationPrompt(this.app, "# Move to trash\n\nAre you sure you want to delete '**" + attr + "**'\n\nIt will be moved to your **system trash**.\n\n", "Move to trash", [["Delete", "mod-warning"], ["Cancel", "mod-cancel"]], "Don't show again", undefined, undefined, (result: number) => {
+                                    let self = new ConfirmationPrompt(this.app, Dict("FUNC_DELETE_WARN_TITLE"), Dict("FUNC_DELETE_WARN_CONTENT"), [[Dict("FUNC_DELETE_ACTION"), "mod-warning"], [Dict("CANCEL"), "mod-cancel"]], Dict("FUNC_DELETE_DONTSOHW"), undefined, undefined, (result: number) => {
                                         if (result == 0) {
                                             self.markd = ""
                                             let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
                                             if (abs) this.app.vault.trash(abs, true)
                                             if (mel) mel.remove()
                                             self.close()
+                                            if (settingscope && settingscope.FM_Full_Refreshing) this.rebuildGUI()
                                         } else {
                                             self.markd = ""
                                             self.close()
@@ -280,7 +285,7 @@ export class FileExplorer extends ItemView {
                         FM.addSeparator()
                         FM.addItem((item) => {
                             let ss = lodir[attr].collapsed
-                            item.setIcon(ss ? "chevrons-up-down" : "chevrons-down-up").setTitle(ss ? "Expand All" : "Collapse All").onClick((ev) => {
+                            item.setIcon(ss ? "chevrons-up-down" : "chevrons-down-up").setTitle(ss ? Dict("FUNC_EXPAND_ALL") : Dict("FUNC_COLLAPSE_ALL")).onClick((ev) => {
                                 let tree = this.recursePush(this.tree)
                                 Object.keys(tree).forEach((path: string) => {
                                     if (path.startsWith(rel + (rel.length > 0 ? "/" : "") + attr)) {
@@ -344,6 +349,57 @@ export class FileExplorer extends ItemView {
                     this.registerDomEvent(title, "contextmenu", (ev) => {
                         let TAF = this.app.vault.getAbstractFileByPath(data.path)
                         let FM = new Menu()
+                        FM.addSeparator()
+                        FM.addItem((item) => {
+                            item.setIcon("edit-3").setTitle(Dict("FILE_EXPLORER_RENAME_ACTION")).onClick((ev) => {
+                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}",attr.substring(0, attr.length - (lodir[attr].ext.length + 1))), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr.substring(0, attr.length - (lodir[attr].ext.length + 1)), (result: number, _: boolean, rn: string) => {
+                                    if (result == 0 && attr.substring(0, attr.length - (lodir[attr].ext.length + 1)) != rn) {
+                                        self.markd = ""
+                                        let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
+                                        if (abs) this.app.vault.rename(abs, rel + (rel.length > 0 ? "/" : "") + rn + "." + lodir[attr].ext)
+                                        if (title) title.childNodes[0].textContent = rn
+
+                                        let s = lodir[attr]
+                                        lodir[rn + "." + s.ext] = s
+                                        lodir[attr] = undefined
+                                        attr = rn + "." + s.ext
+
+                                        self.close()
+                                        if (settingscope && settingscope.FM_Full_Refreshing) this.rebuildGUI()
+                                    } else {
+                                        self.markd = ""
+                                        self.close()
+                                    }
+                                })
+                                self.open()
+                            })
+                        })
+                        FM.addItem((item) => {
+                            item.setIcon("trash-2").setTitle(Dict("FUNC_DELETE")).onClick((ev) => {
+                                if (settingscope && !settingscope.FM_Deletion_Warning) {
+                                    let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
+                                    if (abs) this.app.vault.trash(abs, true)
+                                    if (mel) mel.remove()
+                                } else {
+                                    let self = new ConfirmationPrompt(this.app, Dict("FUNC_DELETE_WARN_TITLE"), Dict("FUNC_DELETE_WARN_CONTENT"), [[Dict("FUNC_DELETE_ACTION"), "mod-warning"], [Dict("CANCEL"), "mod-cancel"]], Dict("FUNC_DELETE_DONTSOHW"), undefined, undefined, (result: number) => {
+                                        if (result == 0) {
+                                            self.markd = ""
+                                            let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
+                                            if (abs) this.app.vault.trash(abs, true)
+                                            if (mel) mel.remove()
+                                            self.close()
+                                            if (settingscope && settingscope.FM_Full_Refreshing) this.rebuildGUI()
+                                        } else {
+                                            self.markd = ""
+                                            self.close()
+                                        }
+                                    })
+                                    self.open()
+                                }
+                            })
+                            //@ts-ignore
+                            item.setWarning(true)
+                        })
                         if (TAF) this.app.workspace.trigger("file-menu", FM, TAF)
                         FM.showAtMouseEvent(ev)
                     })
@@ -444,12 +500,12 @@ export class FileExplorer extends ItemView {
             this.unload()
         }
     }
-    async unload(sent?: boolean) {
+    async unload(/*sent?: boolean*/) {
         if (this.canLoad) {
             visible = false
             //     if (cb) cb()
-            if (settingscope?.FM_Enabled && !sent) {
-                new Notice("Please disable QOL file explorer in the plugin's settings.")
+            if (settingscope?.FM_Enabled /*&& !sent*/) {
+                new Notice(Dict("FILE_EXPLORER_VIEW_WARN"))
                 const { workspace } = this.app;
                 const leaf = workspace.getLeftLeaf(false);
                 if (leaf) {
@@ -468,5 +524,5 @@ export function ConstructExplorer() {
 
 }
 export function setCB(cbf: Function) {
-    cb = cbf
+    // cb = cbf
 }

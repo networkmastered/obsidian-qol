@@ -55,7 +55,8 @@
 
 .qol-offset-up {
     position: relative;
-    top:-7.5vh;
+    /* top:-7.5vh; */
+    top:calc(-2*var(--input-height));
 }
 
 .qol-input {

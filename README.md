@@ -7,7 +7,7 @@ This plugin aims to add features to Obsidian to make using it easier to use.
 *Notice:* All features are disabled by default, you can enable them in settings.
 
 HTTPS:
->    This plugin uses https on start to check for updates with github. No user data is transmitted.
+>    This plugin uses https on start and is enabled by defualt to check for updates with github. No user data is transmitted.  This can be toggled in settings under "Plugin"
 
 # How to install:
 
@@ -56,7 +56,7 @@ Once you have downloaded the files:
 
 - TouchScreen support for pc (ability to drag files)
 
-  
+- Write/Break timer
 
 # Coming Soon:
 
@@ -65,8 +65,6 @@ Once you have downloaded the files:
 - StatusBar Title class tooltip
 
 - TopBar Scrolling
-
-- Write/Break timer
 
 - More Tooltips
 

@@ -1,6 +1,7 @@
 //@ts-ignore
-import * as icos from './lucid-svgs-compress';
-// import * as icos from './lucid-svgs';
+import * as icos from './lucide-svg-onlyUsed';
+// import * as icos from './lucide-svgs-compress';
+// import * as icos from './lucide-svgs';
 export function createEl(el: Element, type: ("svg"), cnt?: string, cls?: string, attr?: { [key: string]: string | number | boolean | null }, cls2?: string, attr2?: { [key: string]: string | number | boolean | null }): Element {
     if (type == "svg") {
         // let svg = el.createSvg("svg")

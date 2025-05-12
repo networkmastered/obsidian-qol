@@ -32,5 +32,18 @@ Updates:
 
 - Bug fixes
 
-- TODO: re-write the README`
+- TODO: re-write the README`,
+"1.5.0":`
+Development test unreleased.
+`,
+"1.5.5":`# Quality of Life (1.5.5):
+Thank you for using Quality of Life!
+
+Updates:
+
+- Patch for command names.
+
+- 
+`,
+
 }

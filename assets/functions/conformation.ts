@@ -44,7 +44,6 @@ export default class qolConfirmationModal extends Modal {
             }, (el) => {
                 el.addEventListener("change", () => {
                     this.UsrRet = el.value
-                    console.log(this.UsrRet)
                 })
                 setTimeout(() => {
                     el.focus({ preventScroll: true })

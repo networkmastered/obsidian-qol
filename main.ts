@@ -127,9 +127,20 @@ export default class qolPlugin extends Plugin {
         // 	this.FileExplorerTrigger();
         // });
         if (this.settings.FM_Enabled) {
+            // this.loadOpenFMTrigg(undefined, this.loadOpenFMTrigg, this.FileExplorerTrigger)
+            // let cnt = 0
+            // while (cnt<50) {
+            //     cnt++
+            //     try {
+            //         this.FileExplorerTrigger()
+            //         break
+            //     } catch (_) {
+            //  await new Promise((r)=>{setTimeout(r,100)})
+            //     }
+            // }
             setTimeout(() => {
-                this.FileExplorerTrigger();
-            }, 500)
+                this.FileExplorerTrigger()
+            }, 8000)
         }
         // setCB(() => {
         // 	if (visible) { qolFMB.addClass("qol-hide-file-folder"); setTooltip(qolFMB, Dict("FILE_EXPLORER_ICON_HOVER_DISABLED")) } else { qolFMB.removeClass("qol-hide-file-folder"); setTooltip(qolFMB, Dict("FILE_EXPLORER_ICON_HOVER")) }
@@ -151,7 +162,7 @@ export default class qolPlugin extends Plugin {
         }
 
         setTimeout(() => {
-            if (new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
+            if (this.settings.UpdateChecking && new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
                 this.settings.LastUpdateCheck = new Date().getTime()
                 this.saveSettings()
                 requestUrl("https://api.github.com/repos/networkmastered/obsidian-qol/releases/latest").then((res) => {
@@ -188,7 +199,7 @@ export default class qolPlugin extends Plugin {
                 }, 100);
             })
         )
-        this.registerEvent(
+        // this.registerEvent(
             this.app.workspace.on("file-open", () => {
                 if (this.settings.NonSymbChars) {
                     setTimeout(async () => { //let file update also somewhat syncs with Obsidian's char count
@@ -206,7 +217,7 @@ export default class qolPlugin extends Plugin {
                     NonSymbolCountText.setText("")
                 }
             })
-        )
+        // )
 
 
         const WriteBreakTimerText = this.addStatusBarItem()
@@ -275,7 +286,7 @@ export default class qolPlugin extends Plugin {
         // this.addSettingTab(new qolSettingTab(this.app, this))
         this.addSettingTab(new settings(this.app, this))
 
-        this.registerEvent(
+        // this.registerEvent(
             this.app.workspace.on("file-menu", (menu, file, whotrig) => {
                 if (whotrig == "qol-triggered") return;
                 //@ts-ignore
@@ -314,16 +325,16 @@ export default class qolPlugin extends Plugin {
                     })
                 }
             })
-        )
-        this.registerEvent(
+        // )
+        // this.registerEvent(
             this.app.vault.on("create", (_) => {
                 setTimeout(() => HookTouchOnFiles(this), 100)
             })
-        )
+        // )
         setTimeout(() => HookTouchOnFiles(this), 5000)
         this.addCommand({
-            id: 'qol-f-expandAll',
-            name: 'Expand all folders within root',
+            id: 'f-expandAll',
+            name: 'Expand all folders',
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
                     new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
@@ -341,8 +352,8 @@ export default class qolPlugin extends Plugin {
             }
         })
         this.addCommand({
-            id: 'qol-f-collapseAll',
-            name: 'Collapse all folders within root',
+            id: 'f-collapseAll',
+            name: 'Collapse all folders',
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
                     new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")

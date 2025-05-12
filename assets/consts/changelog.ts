@@ -37,13 +37,17 @@ Updates:
 Development test unreleased.
 `,
 "1.5.5":`# Quality of Life (1.5.5):
+
 Thank you for using Quality of Life!
 
 Updates:
 
 - Patch for command names.
 
-- 
-`,
+- Attempt to get file manager not erroring on start. Error is app.js and goes down the stack to the plugin.
+
+- No longer using the compressed icons as it is more beneficial to just not use what you don't need. This also helps with performance at startup.
+
+- Bug fix: check update setting now has an effect`,
 
 }

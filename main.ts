@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin, requestUrl, setTooltip, WorkspaceLeaf } from 'obsidian'
+import { Editor, EditorChange, MarkdownFileInfo, MarkdownView, Notice, Plugin, requestUrl, setTooltip, WorkspaceLeaf } from 'obsidian'
 import changelog from './assets/consts/changelog'
 import settings from './assets/functions/buildSettings'
 import markdownModal from './assets/functions/viewMarkDown'
@@ -6,6 +6,9 @@ import HookTouchOnFiles from "./assets/functions/TouchScreenHook"
 import GrammerFixesInit from "./assets/functions/GrammerFixes"
 import { classN, FileExplorer, visible } from "./assets/functions/fileExplorer"
 // import { deflate, inflate } from "./assets/libs/pako/compression"
+
+import strReplaceAll from "./assets/libs/replaceAll"
+
 
 import Dict from "./assets/language/LanguageSelector"
 
@@ -116,7 +119,6 @@ export default class qolPlugin extends Plugin {
 
         this.registerView(
             classN,
-            //@ts-ignore
             (leaf: WorkspaceLeaf) => {
                 if (visible) { return new FileExplorer(leaf, true) }
                 return new FileExplorer(leaf)
@@ -138,7 +140,7 @@ export default class qolPlugin extends Plugin {
             //  await new Promise((r)=>{setTimeout(r,100)})
             //     }
             // }
-            setTimeout(() => {
+            window.setTimeout(() => {
                 this.FileExplorerTrigger()
             }, 8000)
         }
@@ -151,9 +153,7 @@ export default class qolPlugin extends Plugin {
         if (this.manifest.version != this.settings.LastUpdateLog && this.settings.ChangeLog) {
             this.settings.LastUpdateLog = this.manifest.version
             this.saveSettings()
-            //@ts-ignore
             if (changelog[this.manifest.version]) {
-                //@ts-ignore
                 // new qolMarkdownModal(this.app, changelog[this.manifest.version]).open()
                 new markdownModal(this.app, changelog[this.manifest.version]).open()
             } else {
@@ -161,7 +161,7 @@ export default class qolPlugin extends Plugin {
             }
         }
 
-        setTimeout(() => {
+        window.setTimeout(() => {
             if (this.settings.UpdateChecking && new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
                 this.settings.LastUpdateCheck = new Date().getTime()
                 this.saveSettings()
@@ -184,39 +184,37 @@ export default class qolPlugin extends Plugin {
 
         const NonSymbolCountText = this.addStatusBarItem()
         NonSymbolCountText.setText('')
-        this.registerEvent(
-            this.app.workspace.on("editor-change", (_, i) => {
-                setTimeout(() => { //let file update also somewhat syncs with Obsidian's char count
-                    //@ts-ignore
+        // this.registerEvent(
+        this.app.workspace.on("editor-change", (_: unknown, i: MarkdownView) => {
+            if (i) {
+                window.setTimeout(() => { //let file update also somewhat syncs with Obsidian's char count
                     if (this.settings.NonSymbChars && i && i.data) {
-                        //@ts-ignore
-                        let rl = i.data.replaceAll(/[A-Za-z]*/gm, "").length
-                        //@ts-ignore
+                        let rl = strReplaceAll(i.data, (/[A-Za-z]*/gm), "").length
                         NonSymbolCountText.setText((i.data.length - rl) + " non-symbols")
                     } else {
                         NonSymbolCountText.setText("")
                     }
                 }, 100);
-            })
-        )
+            }
+        })
+        // )
         // this.registerEvent(
-            this.app.workspace.on("file-open", () => {
-                if (this.settings.NonSymbChars) {
-                    setTimeout(async () => { //let file update also somewhat syncs with Obsidian's char count
-                        let i = this.app.workspace.getActiveFile()
-                        if (i) {
-                            let str = await this.app.vault.read(i)
-                            if (str) {
-                                //@ts-ignore
-                                let rl = str.replaceAll(/[A-Za-z]*/gm, "").length
-                                NonSymbolCountText.setText((str.length - rl) + " non-symbols")
-                            }
+        this.app.workspace.on("file-open", () => {
+            if (this.settings.NonSymbChars) {
+                window.setTimeout(async () => { //let file update also somewhat syncs with Obsidian's char count
+                    let i = this.app.workspace.getActiveFile()
+                    if (i) {
+                        let str = await this.app.vault.read(i)
+                        if (str) {
+                            let rl = strReplaceAll(str, (/[A-Za-z]*/gm), "").length
+                            NonSymbolCountText.setText((str.length - rl) + " non-symbols")
                         }
-                    }, 100);
-                } else {
-                    NonSymbolCountText.setText("")
-                }
-            })
+                    }
+                }, 100);
+            } else {
+                NonSymbolCountText.setText("")
+            }
+        })
         // )
 
 
@@ -235,8 +233,22 @@ export default class qolPlugin extends Plugin {
                             USER_TIMINGS.writing.files[edit.file.path].breakTime++
                         }
                         USER_TIMINGS.writing.files[edit.file.path].totalTime++
-                        //@ts-ignore
-                        WriteBreakTimerText.setText(this.settings.WriteTimerFormat.replaceAll("%t", USER_TIMINGS.writing.files[edit.file.path].totalTime).replaceAll("%w", USER_TIMINGS.writing.files[edit.file.path].writeTime).replaceAll("%b", USER_TIMINGS.writing.files[edit.file.path].breakTime))
+                        WriteBreakTimerText.setText(
+                            strReplaceAll(
+                                strReplaceAll(
+                                    strReplaceAll(
+                                        this.settings.WriteTimerFormat,
+                                        "%t",
+                                        USER_TIMINGS.writing.files[edit.file.path].totalTime
+                                    ),
+                                    "%w",
+                                    USER_TIMINGS.writing.files[edit.file.path].writeTime
+                                ),
+                                "%b",
+                                USER_TIMINGS.writing.files[edit.file.path].breakTime
+                            )
+                            //this.settings.WriteTimerFormat.replaceAll("%t", USER_TIMINGS.writing.files[edit.file.path].totalTime).replaceAll("%w", USER_TIMINGS.writing.files[edit.file.path].writeTime).replaceAll("%b", USER_TIMINGS.writing.files[edit.file.path].breakTime)
+                        )
                     }
                 } else {
                     WriteBreakTimerText.setText("WriteTime:Cannot find a file.")
@@ -287,89 +299,149 @@ export default class qolPlugin extends Plugin {
         this.addSettingTab(new settings(this.app, this))
 
         // this.registerEvent(
-            this.app.workspace.on("file-menu", (menu, file, whotrig) => {
-                if (whotrig == "qol-triggered") return;
-                //@ts-ignore
-                if (file && !file.extension && this.settings.ExpandFolder) {
-                    menu.addItem((item) => {
-                        let fm = GrabWorkspaceElement()
-                        if (fm) {
-                            let state = fm.view.fileItems[file.path].collapsed || false
-                            if (state) {
-                                item.setTitle("Expand recursively")
-                            } else {
-                                item.setTitle("Collapse recursively")
-                            }
-                            item.setIcon(null)
-                                .onClick(() => {
-                                    if (fm) {
-                                        let fold = ""
-                                        let scc = true
-                                        let recurse = fm.view.fileItems
-                                        Object.keys(recurse).forEach((key) => {
-                                            if (key.startsWith(file.path)) {
-                                                if (recurse[key] && recurse[key].setCollapsed) {
-                                                    // recurse[fold].setCollapsed(true,0)
-                                                    if (state == recurse[key].collapsed)
-                                                        recurse[key].selfEl.click()
-                                                }
-                                            }
-                                        })
-                                    } else {
-                                        new Notice("Cannnot preform command. Unknown workspace.")
-                                    }
-                                })
+        this.app.workspace.on("file-menu", (menu, file, whotrig) => {
+            if (whotrig == "qol-triggered") return;
+            if (file && this.settings.ExpandFolder) {
+                menu.addItem((item) => {
+                    let fm = GrabWorkspaceElement()
+                    if (fm) {
+                        let state = fm.view.fileItems[file.path].collapsed || false
+                        if (state) {
+                            item.setTitle("Expand recursively")
                         } else {
-                            new Notice("Cannnot preform command. Cannot find workspace.")
+                            item.setTitle("Collapse recursively")
                         }
-                    })
-                }
-            })
+                        item.setIcon(null)
+                            .onClick(() => {
+                                if (fm) {
+                                    let fold = ""
+                                    let scc = true
+                                    let recurse = fm.view.fileItems
+                                    Object.keys(recurse).forEach((key) => {
+                                        if (key.startsWith(file.path)) {
+                                            if (recurse[key] && recurse[key].setCollapsed) {
+                                                // recurse[fold].setCollapsed(true,0)
+                                                if (state == recurse[key].collapsed)
+                                                    recurse[key].selfEl.click()
+                                            }
+                                        }
+                                    })
+                                } else {
+                                    new Notice("Cannnot preform command. Unknown workspace.")
+                                }
+                            })
+                    } else {
+                        new Notice("Cannnot preform command. Cannot find workspace.")
+                    }
+                })
+            }
+        })
         // )
         // this.registerEvent(
-            this.app.vault.on("create", (_) => {
-                setTimeout(() => HookTouchOnFiles(this), 100)
-            })
+        this.app.vault.on("create", (_) => {
+            window.setTimeout(() => HookTouchOnFiles(this), 100)
+        })
         // )
-        setTimeout(() => HookTouchOnFiles(this), 5000)
+        window.setTimeout(() => HookTouchOnFiles(this), 5000)
+
         this.addCommand({
-            id: 'f-expandAll',
-            name: 'Expand all folders',
-            editorCallback: (editor: Editor, view: MarkdownView) => {
-                if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
-                    new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
-                    return
-                }
+            id: "f-expand",
+            name: "Expand all folders",
+            checkCallback: (checking: boolean) => {
                 let fm = GrabWorkspaceElement()
-                if (fm) {
-                    let recurse = fm.view.fileItems
-                    Object.keys(recurse).forEach((key) => {
-                        if (recurse[key] && recurse[key].setCollapsed) {
-                            if (recurse[key].collapsed) recurse[key].selfEl.click()
+                if ((this.settings.FunctionBypass || this.settings.ExpandFolder) && fm && fm.view.fileItems) {
+                    if (!checking) {
+                        // console.log("execute")
+                        // doCommand(value);
+                        if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
+                            new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
+                            return
                         }
-                    })
-                } else { new Notice("Failed to preform command.") }
-            }
+                        let fm = GrabWorkspaceElement()
+                        if (fm) {
+                            let recurse = fm.view.fileItems
+                            if (recurse) {
+                                Object.keys(recurse).forEach((key) => {
+                                    if (recurse[key] && recurse[key].setCollapsed) {
+                                        if (recurse[key].collapsed) recurse[key].selfEl.click()
+                                    }
+                                })
+                            }
+                        } else { new Notice("Failed to preform command.") }
+                    }
+                    return true
+                }
+                return false;
+            },
         })
         this.addCommand({
-            id: 'f-collapseAll',
-            name: 'Collapse all folders',
-            editorCallback: (editor: Editor, view: MarkdownView) => {
-                if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
-                    new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
-                    return
-                }
+            id: "f-collapse",
+            name: "Collapse all folders",
+            checkCallback: (checking: boolean) => {
                 let fm = GrabWorkspaceElement()
-                if (fm) {
-                    let recurse = fm.view.fileItems
-                    Object.keys(recurse).forEach((key) => {
-                        if (recurse[key] && recurse[key].setCollapsed) {
-                            if (!recurse[key].collapsed) recurse[key].selfEl.click()
+                if ((this.settings.FunctionBypass || this.settings.ExpandFolder) && fm && fm.view.fileItems) {
+                    if (!checking) {
+                        // console.log("execute")
+                        // doCommand(value);
+                        if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
+                            new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
+                            return
                         }
-                    })
-                } else { new Notice("Failed to preform command.") }
-            }
+                        let fm = GrabWorkspaceElement()
+                        if (fm) {
+                            let recurse = fm.view.fileItems
+                            if (recurse) {
+                                Object.keys(recurse).forEach((key) => {
+                                    if (recurse[key] && recurse[key].setCollapsed) {
+                                        if (!recurse[key].collapsed) recurse[key].selfEl.click()
+                                    }
+                                })
+                            }
+                        } else { new Notice("Failed to preform command.") }
+                    }
+                    return true
+                }
+                return false;
+            },
         })
+        // this.addCommand({
+        //     id: 'f-expandAll',
+        //     name: 'Expand all folders',
+        //     editorCallback: (editor: Editor, view: MarkdownView) => {
+        //         if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
+        //             new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
+        //             return
+        //         }
+        //         let fm = GrabWorkspaceElement()
+        //         if (fm) {
+        //             let recurse = fm.view.fileItems
+        //             Object.keys(recurse).forEach((key) => {
+        //                 if (recurse[key] && recurse[key].setCollapsed) {
+        //                     if (recurse[key].collapsed) recurse[key].selfEl.click()
+        //                 }
+        //             })
+        //         } else { new Notice("Failed to preform command.") }
+        //     }
+        // })
+        // this.addCommand({
+        //     id: 'f-collapseAll',
+        //     name: 'Collapse all folders',
+        //     editorCallback: (editor: Editor, view: MarkdownView) => {
+        //         if (!this.settings.FunctionBypass && !this.settings.ExpandFolder) {
+        //             new Notice("Cannot execute command: 'qol/settings/Misc/Functions work...' or  'qol/settings/Recursive/Recursively expand...'")
+        //             return
+        //         }
+        //         let fm = GrabWorkspaceElement()
+        //         if (fm) {
+        //             let recurse = fm.view.fileItems
+        //             Object.keys(recurse).forEach((key) => {
+        //                 if (recurse[key] && recurse[key].setCollapsed) {
+        //                     if (!recurse[key].collapsed) recurse[key].selfEl.click()
+        //                 }
+        //             })
+        //         } else { new Notice("Failed to preform command.") }
+        //     }
+        // })
 
     }
 

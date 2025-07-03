@@ -1,9 +1,22 @@
+import { lkeys } from "./LanguageSelector"
 
+const strings: { [key in lkeys]: string } = {
+    //Unused
+    "": "",
 
-const strings: { [key: string]: string } = {
 
     //SETTINGS
-    "CONTRIBUTE": "if you have any issues or features please report the <a href='https://github.com/networkmastered/obsidian-qol/issues/new'>here</a>. You can also help contribute to the plugin or language support <a href='https://github.com/networkmastered/obsidian-qol/'>here</a>.", //ihtm
+
+    // CONTRIBUTE1 + CONTRIBUTE2
+    // CONTRIBUTE2: URL to Issues
+    //new line
+    // CONTRIBUTE3 + CONTRIBUTE4
+    // CONTRIBUTE4: URL to Repo
+    "CONTRIBUTE1": "If you have any issues or features please report to ",
+    "CONTRIBUTE2": "here",
+
+    "CONTRIBUTE3": "You can also help contribute to the plugin or language support ",
+    "CONTRIBUTE4": "here",
 
     "TITLE": "QOL - quality of life",
     "DESC": "Adds several improvements and fixes to Obsidian.",
@@ -76,7 +89,7 @@ const strings: { [key: string]: string } = {
     "SETTINGS_FILE_EXPLORER_DESC": "A custom file explorer that implaments some new features. The new file explorer will be opened at the right like the original file explorer. The file explorer cannot be closed. Please disable the setting instead",
     "SETTINGS_FILE_EXPLORER_ENABLED_TITLE": "Enable file explorer",
     "SETTINGS_FILE_EXPLORER_ENABLED_DESC": "If disabled, you can close the QOL File explorer by rightclicking the book with plus at the top and pressing 'Close'. Or reload Obsidian.",
-    
+
     "SETTINGS_FILE_EXPLORER_WARNINGS_TITLE": "Deletion warning",
     "SETTINGS_FILE_EXPLORER_WARNINGS_DESC": "When deleting a file you will receive a message asking if you would like to delete it. Disabling this removes that. This can be disabled by the checkbox within the prompt.",
     "SETTINGS_FILE_EXPLORER_REFRESHER_TITLE": "Full tree reloading",
@@ -113,14 +126,14 @@ const strings: { [key: string]: string } = {
     "FUNC_EXPAND_ALL": "Expand all",
     "FUNC_COLLAPSE_ALL": "Collapse all",
     "FUNC_DELETE": "Delete",
-    "FUNC_DELETE_WARN_TITLE":"# Move to trash\n&nbsp\nAre you sure you want to delete '**{file}**'\n\nIt will be moved to your **system trash**.\n\n",
-    "FUNC_DELETE_WARN_CONTENT":"Move to trash",
-    "FUNC_DELETE_ACTION":"Delete",
-    "FUNC_DELETE_DONTSOHW":"Don't show again",
+    "FUNC_DELETE_WARN_TITLE": "# Move to trash\n&nbsp\nAre you sure you want to delete '**{file}**'\n\nIt will be moved to your **system trash**.\n\n",
+    "FUNC_DELETE_WARN_CONTENT": "Move to trash",
+    "FUNC_DELETE_ACTION": "Delete",
+    "FUNC_DELETE_DONTSOHW": "Don't show again",
 
 
-    "CANCEL":"Cancel",
-    "CONFIRM":"Confirm",
+    "CANCEL": "Cancel",
+    "CONFIRM": "Confirm",
 
     //Must support Obsidian's file/folder naming:
 
@@ -135,7 +148,7 @@ const strings: { [key: string]: string } = {
 
 
 
-export default (key: string) => {
+export default (key: lkeys) => {
     if (key && strings[key]) {
         return strings[key]
     } else {

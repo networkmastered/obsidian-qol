@@ -56,11 +56,27 @@ function formatSize(B: number) {
     if (i == 0) return B + "B"
     return B.toFixed(2) + byteFrmts[i % 6]
 }
-
+interface treeobject {
+    t: "file" | "folder",
+    TAbstract?: TAbstractFile,
+    TFile?: TFile
+    Point?: treeobject,
+    path?: string
+    stats?: {
+        ctime: number
+        mtime: number
+        size: number
+    },
+    ext?: string
+    collapsed?: boolean
+    children?: tree
+}
+interface tree {
+    [key: string]: treeobject
+}
 export let visible = false
 export class FileExplorer extends ItemView {
-    //                    any: Object | ArrayPointer?, better than //@ts-ignore
-    tree: { [key: string]: any } = {}
+    tree: tree = {}
     container = this.contentEl;
     canLoad = true
     expandState = false;
@@ -72,35 +88,34 @@ export class FileExplorer extends ItemView {
         if (kill || !settingscope?.FM_Enabled) {
             this.canLoad = false
         }
-        //@ts-ignore
-        this.app.workspace.on("qol-remotes-kill-workspace", () => {
-            //does absolutly nothing
-            // this.canLoad = false
-            // this.unload(true)
-        })
+
+        // this.app.workspace.on("qol-remotes-kill-workspace", () => {
+        //does absolutly nothing
+        // this.canLoad = false
+        // this.unload(true)
+        // })
     }
     getViewType() { return classN }
     getDisplayText() { return Dict("FILE_EXPLORER_VIEW_TITLE") }
 
-    recursePush(sn: { [key: string]: any }, rel: string = "") {
-        let tr = {}
-        Object.keys(sn).forEach((nd) => {
+    recursePush(sn: tree, rel: string = "") {
+        let tr: /*{ [key: string]: unknown }*/tree = {}
+        Object.keys(sn).forEach((nd: string) => {
             let el = sn[nd]
             if (el.t == "folder") {
                 let TAF = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + nd)
                 if (TAF) {
-                    //@ts-ignore
                     tr[rel + (rel.length > 0 ? "/" : "") + nd] = { t: "folder", TAbstract: TAF, Point: sn[nd] }
-                    let st = this.recursePush(sn[nd].children, rel + (rel.length > 0 ? "/" : "") + nd)
-                    Object.keys(st).forEach((sti) => {
-                        //@ts-ignore
-                        tr[sti] = st[sti]
-                    })
+                    if (sn[nd].children) {
+                        let st = this.recursePush(sn[nd].children, rel + (rel.length > 0 ? "/" : "") + nd)
+                        Object.keys(st).forEach((sti) => {
+                            tr[sti] = st[sti]
+                        })
+                    }
                 }
             } else {
                 let TAF = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + nd)
                 if (TAF) {
-                    //@ts-ignore
                     tr[rel + (rel.length > 0 ? "/" : "") + nd] = { t: "file", TAbstract: TAF, TFile: sn[nd].TFile, Point: sn[nd] }
                 }
             }
@@ -136,7 +151,7 @@ export class FileExplorer extends ItemView {
                         let amt = 0
                         let sn = Dict("FILE_EXPLORER_NEW_FILE")
                         if (ev.altKey) {
-                            await new Promise((r) => {
+                            // await new Promise((r) => {
                                 let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_CREATE_FOLDER"), Dict("FILE_EXPLORER_CREATE_FOLDER_CONTEXT"), [[Dict("CONFIRM"), "mod-submit"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_CREATE_FOLDER_CONTENT"), "", (result: number, _: boolean, rn: string) => {
                                     if (parseInt(rn.split(" ")[rn.split(" ").length - 1])) {
                                         if (rn && rn.length > 0 && parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])) {
@@ -163,10 +178,10 @@ export class FileExplorer extends ItemView {
                                         }
                                     }
                                     self.close()
-                                    r(true)
+                                    // r(true)
                                 }, Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_PLACEHOLDER"))
                                 self.open()
-                            })
+                            // })
                         } else {
                             amt = 1
                         }
@@ -189,25 +204,15 @@ export class FileExplorer extends ItemView {
                     setTooltip(bt, bt.getAttribute("aria-label") || "")
                     let svgico = createEl(bt, "svg", (this.expandState ? "ChevronsUpDown" : "ChevronsDownUp"), "svg-icon lucide-chevrons-down-up")
                     bt.addEventListener("click", (ev) => {
-                        if (this.expandState) {
-                            let tree = this.recursePush(this.tree)
-                            Object.keys(tree).forEach((path: string) => {
-                                //@ts-ignore
-                                let f = tree[path]
+                        let tree = this.recursePush(this.tree)
+                        Object.keys(tree).forEach((path: string) => {
+                            let f: treeobject | undefined = tree[path]
+                            if (f) {
                                 if (f && f.t == "folder") {
-                                    f.Point.collapsed = true
+                                    if (f.Point) f.Point.collapsed = this.expandState//true
                                 }
-                            })
-                        } else {
-                            let tree = this.recursePush(this.tree)
-                            Object.keys(tree).forEach((path: string) => {
-                                //@ts-ignore
-                                let f = tree[path]
-                                if (f && f.t == "folder") {
-                                    f.Point.collapsed = false
-                                }
-                            })
-                        }
+                            }
+                        })
                         this.expandState = !this.expandState
                         this.rebuildGUI()
                     })
@@ -236,7 +241,7 @@ export class FileExplorer extends ItemView {
                         FM.addSeparator()
                         FM.addItem((item) => {
                             item.setIcon("edit-3").setTitle(Dict("FILE_EXPLORER_RENAME_ACTION")).onClick((ev) => {
-                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}",attr), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr, (result: number, _: boolean, rn: string) => {
+                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}", attr), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr, (result: number, _: boolean, rn: string) => {
                                     if (result == 0 && attr != rn) {
                                         self.markd = ""
                                         let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
@@ -279,7 +284,7 @@ export class FileExplorer extends ItemView {
                                     self.open()
                                 }
                             })
-                            //@ts-ignore
+                            //@ts-ignore exists
                             item.setWarning(true)
                         })
                         FM.addSeparator()
@@ -289,10 +294,11 @@ export class FileExplorer extends ItemView {
                                 let tree = this.recursePush(this.tree)
                                 Object.keys(tree).forEach((path: string) => {
                                     if (path.startsWith(rel + (rel.length > 0 ? "/" : "") + attr)) {
-                                        //@ts-ignore
-                                        let f = tree[path]
-                                        if (f && f.t == "folder") {
-                                            f.Point.collapsed = !ss
+                                        let f: treeobject | undefined = tree[path]
+                                        if (f) {
+                                            if (f && f.t == "folder") {
+                                                if (f.Point) f.Point.collapsed = !ss
+                                            }
                                         }
                                     }
                                 })
@@ -352,7 +358,7 @@ export class FileExplorer extends ItemView {
                         FM.addSeparator()
                         FM.addItem((item) => {
                             item.setIcon("edit-3").setTitle(Dict("FILE_EXPLORER_RENAME_ACTION")).onClick((ev) => {
-                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}",attr.substring(0, attr.length - (lodir[attr].ext.length + 1))), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr.substring(0, attr.length - (lodir[attr].ext.length + 1)), (result: number, _: boolean, rn: string) => {
+                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_RENAME").replace("{{file}}", attr.substring(0, attr.length - (lodir[attr].ext.length + 1))), Dict("FILE_EXPLORER_RENAME_ACTION"), [[Dict("FILE_EXPLORER_RENAME_ACTION"), "mod-rename"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_RENAME_CONTENT"), attr.substring(0, attr.length - (lodir[attr].ext.length + 1)), (result: number, _: boolean, rn: string) => {
                                     if (result == 0 && attr.substring(0, attr.length - (lodir[attr].ext.length + 1)) != rn) {
                                         self.markd = ""
                                         let abs = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + attr)
@@ -397,10 +403,10 @@ export class FileExplorer extends ItemView {
                                     self.open()
                                 }
                             })
-                            //@ts-ignore
+                            //@ts-ignore exists
                             item.setWarning(true)
                         })
-                        if (TAF) this.app.workspace.trigger("file-menu", FM, TAF)
+                        if (TAF) this.app.workspace.trigger("file-menu", FM, TAF, "qol-triggered")
                         FM.showAtMouseEvent(ev)
                     })
                     this.registerDomEvent(title, "click", (ev) => {
@@ -424,7 +430,6 @@ export class FileExplorer extends ItemView {
                         svg.setAttribute("stroke-linecap", "round")
                         svg.setAttribute("stroke-linejoin", "round")
                         let ico = svg.createSvg("path")
-                        //@ts-ignore
                         ico.setAttribute("d", fileIcons[data.ext.toLowerCase()])
                         if (data.path.toLowerCase().endsWith(".excalidraw.md")) ico.setAttribute("d", fileIcons["cexcalidraw"])
                     }
@@ -437,16 +442,14 @@ export class FileExplorer extends ItemView {
         let fc = this.container.createDiv({ cls: "qol-tree-content nav-files-container node-insert-event show-unsupported" })
         Object.keys(this.tree).forEach((f) => {
             if (this.tree[f].t == "file") {
-                let rc = {}
-                //@ts-ignore
+                let rc: { [key: string]: unknown } = {}
                 rc[f] = this.tree[f]
                 locRecurs(rc, fc, "")
             }
         })
         Object.keys(this.tree).forEach((f) => {
             if (this.tree[f].t == "folder") {
-                let rc = {}
-                //@ts-ignore
+                let rc: { [key: string]: unknown } = {}
                 rc[f] = this.tree[f]
                 locRecurs(rc, fc, "")
             }
@@ -471,7 +474,7 @@ export class FileExplorer extends ItemView {
                     spath.forEach((path, ind) => {
                         if (ind + 1 < spath.length) {
                             if (!innerf[path]) innerf[path] = { children: {}, t: "folder", collapsed: true }
-                            innerf = innerf[path].children
+                            if (innerf[path].children) innerf = innerf[path].children
                         } else {
                             innerf[path] = { path: file.path, t: "file", stats: file.stat, ext: file.extension, TFile: file }
                         }
@@ -484,7 +487,7 @@ export class FileExplorer extends ItemView {
                         if (!innerf[path]) {
                             innerf[path] = { children: {}, t: "folder" }
                         }
-                        innerf = innerf[path].children
+                        if (innerf[path].children) innerf = innerf[path].children
                     })
                 })
 

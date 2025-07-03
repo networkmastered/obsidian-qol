@@ -1,5 +1,7 @@
-//@ts-ignore
-import * as icos from './lucide-svg-onlyUsed';
+//@ts-nocheck
+import * as icos2 from './lucide-svg-onlyUsed';
+let icos:{[key:string]:[]} = icos2
+
 // import * as icos from './lucide-svgs-compress';
 // import * as icos from './lucide-svgs';
 export function createEl(el: Element, type: ("svg"), cnt?: string, cls?: string, attr?: { [key: string]: string | number | boolean | null }, cls2?: string, attr2?: { [key: string]: string | number | boolean | null }): Element {
@@ -24,10 +26,8 @@ export function createEl(el: Element, type: ("svg"), cnt?: string, cls?: string,
         // svg.setAttribute("stroke-linecap", "round")
         // svg.setAttribute("stroke-linejoin", "round")
         // // if (cnt) pth.setAttribute("d", cnt)
-        //@ts-ignore
 
         if (cnt && icos.icons[cnt]) {
-            //@ts-ignore
             let svg = icos.createElement(icos.icons[cnt])
             el.appendChild(svg)
             if (cls) svg.addClasses(cls.split(" "))

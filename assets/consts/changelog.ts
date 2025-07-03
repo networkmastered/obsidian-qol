@@ -1,4 +1,4 @@
-export default {
+let cl:{[key:string]:string} = {
     "1.3.0":
         `# QOL(Quality of Life) (1.3.0):
 Thank you for using Quality of Life!
@@ -51,3 +51,4 @@ Updates:
 - Bug fix: check update setting now has an effect`,
 
 }
+export default cl

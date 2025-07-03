@@ -1,10 +1,9 @@
-import { App, Component, Editor, MarkdownRenderer, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting, TFile, TFolder, ToggleComponent } from 'obsidian'
+import { App, Component, Editor, MarkdownRenderer, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, requestUrl, Setting, TFile, TFolder, ToggleComponent, UserEvent } from 'obsidian'
 import { USER_TIMINGS } from "main"
 
-//@ts-ignore
-export default function load(local_this) {
-    //@ts-ignore
-    local_this.registerDomEvent(window, "keyup", (evt) => {
+
+export default function load(local_this: { [key: string]: any }) {
+    local_this.registerDomEvent(window, "keyup", (evt:KeyboardEvent) => {
         let edit = local_this.app.workspace.activeEditor
         if (edit && edit.editor && edit.file && edit.editor.hasFocus()) {
             if (!USER_TIMINGS.writing.files[edit.file.path]) {

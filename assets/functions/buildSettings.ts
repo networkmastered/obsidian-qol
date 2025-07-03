@@ -2,6 +2,7 @@ import { App, PluginSettingTab, Setting, ToggleComponent } from 'obsidian'
 import HookTouchOnFiles from './TouchScreenHook'
 import qolPlugin from 'main'
 import Dict from "../language/LanguageSelector"
+import {lkeys} from "../language/LanguageSelector"
 
 export default class qolSettingTab extends PluginSettingTab {
     plugin: qolPlugin
@@ -15,7 +16,26 @@ export default class qolSettingTab extends PluginSettingTab {
 
         containerEl.empty()
 
-        containerEl.createEl("p", { cls: "qol-setting-p" }).innerHTML = Dict("CONTRIBUTE")
+        let t1 = containerEl.createDiv()
+        t1.addClass("qol-setting-p")
+        t1.innerText = Dict("CONTRIBUTE1")
+
+        let l1 = containerEl.createEl("a")
+        l1.addClass("qol-setting-p")
+        l1.innerText = Dict("CONTRIBUTE2")
+        l1.href = "https://github.com/networkmastered/obsidian-qol/issues/new"
+        t1.appendChild(l1)
+        
+        let t2 = containerEl.createDiv()
+        t2.addClass("qol-setting-p")
+        t2.innerText = Dict("CONTRIBUTE3")
+
+        let l2 = containerEl.createEl("a")
+        l2.addClass("qol-setting-p")
+        l2.innerText = Dict("CONTRIBUTE4")
+        l2.href = "https://github.com/networkmastered/obsidian-qol/"
+        t2.appendChild(l2)
+        
 
         ////////////////////[IDE:hide](CMD:"CTRL-DOWN-SNAP")(CMD:"EXEC title.cpp Word Processing")
         containerEl.createEl("hr", { cls: "qol-setting-sep" })
@@ -263,8 +283,7 @@ export default class qolSettingTab extends PluginSettingTab {
             .setDesc(Dict("SETTINGS_PLUGIN_LANGUAGE_DESC"))
             .addDropdown(nl => {
                 let langs = Dict("")
-                //@ts-ignore
-                langs.split(",").forEach((l) => nl.addOption(l, Dict(l, "LANG")))
+                langs.split(",").forEach((l:lkeys) => nl.addOption(l, Dict(l, "LANG")))
                 nl.setValue(this.plugin.settings.Language)
                     .onChange(async (value) => {
                         this.plugin.settings.Language = value

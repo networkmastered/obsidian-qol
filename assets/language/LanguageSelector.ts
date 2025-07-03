@@ -5,18 +5,11 @@ const langs: { [key: string]: { ["parser"]: Function, ["name"]: string } } = {
     "EN": { parser: English, name: "English" }, //TRUNC NAME: {parser:FUNC,name:LocalEName}
 }
 
+// export type languages = "English"
 
 
 
-
-
-
-
-
-
-let cache = "EN"
-export default (key: (
-    "" |
+export type lkeys = "" |
     "TITLE" |
     "DESC" |
     "SETTINGS_WORD_PROCESSING_DESC" |
@@ -75,7 +68,10 @@ export default (key: (
     "SETTINGS_FILE_EXPLORER_WARNINGS_DESC" |
     "SETTINGS_FILE_EXPLORER_REFRESHER_TITLE" |
     "SETTINGS_FILE_EXPLORER_REFRESHER_DESC" |
-    "CONTRIBUTE" |
+    "CONTRIBUTE1" |
+    "CONTRIBUTE2" |
+    "CONTRIBUTE3" |
+    "CONTRIBUTE4" |
     "FILE_EXPLORER_CREATE_FOLDER" |
     "FILE_EXPLORER_CREATE_FOLDER_CONTENT" |
     "FILE_EXPLORER_CREATE_FOLDER_CONTEXT" |
@@ -101,7 +97,18 @@ export default (key: (
     "FILE_EXPLORER_VIEW_WARN" |
     "SETTINGS_WORD_PROCESSING_NONSYMBOL_COUNT_SUB" |
     "SETTINGS_TOUCH_SCREEN_FILE_DRAG_SUB"
-), userLanguage?: undefined | string): string => {
+
+
+
+
+
+
+
+
+
+
+let cache = "EN"
+export default (key: lkeys, userLanguage?: undefined | string): string => {
     // return "UL"; // debuggging
     if (userLanguage == "LANG") {
         let out = "English"

@@ -3,8 +3,7 @@ import { GrabWorkspaceElement } from 'main'
 
 let hooked: Array<Element> = []
 let fileExplorerElement: Element | undefined = undefined
-//@ts-ignore
-export default function HookTouchOnFiles(local_this) {
+export default function HookTouchOnFiles(local_this: { [key: string]: any }) {
     let fm = GrabWorkspaceElement()
     if (local_this.settings.TouchScreen && fm && fm.view && fm.view.fileItems) {
         Object.keys(fm.view.fileItems).forEach((key) => {
@@ -12,8 +11,7 @@ export default function HookTouchOnFiles(local_this) {
             if (hooked.includes(el)) return
             if (el && el.parentElement && el.parentElement.parentElement && el.parentElement.parentElement.parentElement && el.parentElement.parentElement.parentElement.hasClass("nav-files-container")) fileExplorerElement = el.parentElement.parentElement.parentElement
             let dragging = false
-            //@ts-ignore
-            let highl = []
+            let highl: Element[] = []
             let x = 0
             let y = 0
             let st = 0
@@ -50,7 +48,6 @@ export default function HookTouchOnFiles(local_this) {
                         if (fileExplorerElement) fileExplorerElement.addClass("qol-scroll-disable")
                         truestart = true
                     }
-                    //@ts-ignore
                     highl.forEach((fol) => {
                         if (fol) {
                             fol.removeClass("is-being-dragged-over")
@@ -72,11 +69,13 @@ export default function HookTouchOnFiles(local_this) {
                         if (!foundfold) {
                             els.forEach((fol) => {
                                 if (fol && fol.hasClass("tree-item-children")) {
-                                    //@ts-ignore
-                                    let ofol = fol.parentElement.getElementsByClassName("tree-item-self")[0]
-                                    ofol.addClass("is-being-dragged-over")
-                                    highl.push(ofol)
-                                    foundfold = true
+                                    let parent = fol.parentElement
+                                    if (parent) {
+                                        let ofol = parent.getElementsByClassName("tree-item-self")[0]
+                                        ofol.addClass("is-being-dragged-over")
+                                        highl.push(ofol)
+                                        foundfold = true
+                                    }
                                 }
                             })
                         }
@@ -101,9 +100,7 @@ export default function HookTouchOnFiles(local_this) {
                                 new Notice("Cannot move, file already exists.")
                             }
                         } else {
-                            //@ts-ignore
                             if (highl[0]) {
-                                //@ts-ignore
                                 let tgt = highl[0]
                                 let fm = GrabWorkspaceElement()
                                 if (fm && tgt && tgt.getAttribute("data-path") && el && el.getAttribute("data-path")) {
@@ -129,7 +126,6 @@ export default function HookTouchOnFiles(local_this) {
                             }
                         }
                     }
-                    //@ts-ignore
                     highl.forEach((fol) => {
                         if (fol) {
                             fol.removeClass("is-being-dragged-over")

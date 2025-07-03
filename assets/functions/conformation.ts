@@ -13,7 +13,7 @@ export default class qolConfirmationModal extends Modal {
     chkboxel: undefined | Element
     UsrRet: string
     UsrPlc: string
-    constructor(app: App, markdown: string, title: string, button: [string[], string[]?], _ChkBox: undefined | string, _UsrInp: undefined | string, _UsrPs: undefined | string, callback: Function,placeholder:string="") {
+    constructor(app: App, markdown: string, title: string, button: [string[], string[]?], _ChkBox: undefined | string, _UsrInp: undefined | string, _UsrPs: undefined | string, callback: Function, placeholder: string = "") {
         super(app)
         this.markd = markdown
         this.title = title
@@ -45,7 +45,7 @@ export default class qolConfirmationModal extends Modal {
                 el.addEventListener("change", () => {
                     this.UsrRet = el.value
                 })
-                setTimeout(() => {
+                window.setTimeout(() => {
                     el.focus({ preventScroll: true })
                     el.setSelectionRange(this.UsrRet.length, this.UsrRet.length);
                 }, 100)
@@ -60,12 +60,11 @@ export default class qolConfirmationModal extends Modal {
                         },
                         type: "checkbox"
                     }).addEventListener("click", () => {
-                        //@ts-ignore
-                        this.dontShow = l.querySelector("input[type=checkbox]").checked
-                    }),
-                        //@ts-ignore
-                        l.appendText(this.ChkBox)
-                        l.setAttribute("placeholder",this.UsrPlc)
+                        let selected: HTMLInputElement | null = l.querySelector("input[type=checkbox]")
+                        if (l && selected) this.dontShow = selected.checked
+                    });
+                    if (this.ChkBox) l.appendText(this.ChkBox)
+                    l.setAttribute("placeholder", this.UsrPlc)
                     this.chkboxel = l
                 })
             }

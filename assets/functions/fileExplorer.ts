@@ -106,8 +106,9 @@ export class FileExplorer extends ItemView {
                 let TAF = this.app.vault.getAbstractFileByPath(rel + (rel.length > 0 ? "/" : "") + nd)
                 if (TAF) {
                     tr[rel + (rel.length > 0 ? "/" : "") + nd] = { t: "folder", TAbstract: TAF, Point: sn[nd] }
-                    if (sn[nd].children) {
-                        let st = this.recursePush(sn[nd].children, rel + (rel.length > 0 ? "/" : "") + nd)
+                    let children = sn[nd].children
+                    if (children) {
+                        let st = this.recursePush(children, rel + (rel.length > 0 ? "/" : "") + nd)
                         Object.keys(st).forEach((sti) => {
                             tr[sti] = st[sti]
                         })
@@ -152,35 +153,35 @@ export class FileExplorer extends ItemView {
                         let sn = Dict("FILE_EXPLORER_NEW_FILE")
                         if (ev.altKey) {
                             // await new Promise((r) => {
-                                let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_CREATE_FOLDER"), Dict("FILE_EXPLORER_CREATE_FOLDER_CONTEXT"), [[Dict("CONFIRM"), "mod-submit"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_CREATE_FOLDER_CONTENT"), "", (result: number, _: boolean, rn: string) => {
-                                    if (parseInt(rn.split(" ")[rn.split(" ").length - 1])) {
-                                        if (rn && rn.length > 0 && parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])) {
-                                            let i = parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])
-                                            if (i <= 100) {
-                                                amt = i
-                                                sn = rn.trim().substring(0, rn.trim().length - (rn.trim().split(" ")[rn.trim().split(" ").length - 1].length + 1))
-                                            } else {
-                                                new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
-                                            }
+                            let self = new ConfirmationPrompt(this.app, Dict("FILE_EXPLORER_CREATE_FOLDER"), Dict("FILE_EXPLORER_CREATE_FOLDER_CONTEXT"), [[Dict("CONFIRM"), "mod-submit"], [Dict("CANCEL"), "mod-cancel"]], undefined, Dict("FILE_EXPLORER_CREATE_FOLDER_CONTENT"), "", (result: number, _: boolean, rn: string) => {
+                                if (parseInt(rn.split(" ")[rn.split(" ").length - 1])) {
+                                    if (rn && rn.length > 0 && parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])) {
+                                        let i = parseInt(rn.trim().split(" ")[rn.trim().split(" ").length - 1])
+                                        if (i <= 100) {
+                                            amt = i
+                                            sn = rn.trim().substring(0, rn.trim().length - (rn.trim().split(" ")[rn.trim().split(" ").length - 1].length + 1))
                                         } else {
-                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
+                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
                                         }
                                     } else {
-                                        if (rn && rn.length > 0 && parseInt(rn.trim())) {
-                                            let i = parseInt(rn.trim())
-                                            if (i <= 100) {
-                                                amt = i
-                                            } else {
-                                                new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
-                                            }
-                                        } else {
-                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
-                                        }
+                                        new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
                                     }
-                                    self.close()
-                                    // r(true)
-                                }, Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_PLACEHOLDER"))
-                                self.open()
+                                } else {
+                                    if (rn && rn.length > 0 && parseInt(rn.trim())) {
+                                        let i = parseInt(rn.trim())
+                                        if (i <= 100) {
+                                            amt = i
+                                        } else {
+                                            new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_ERROR"))
+                                        }
+                                    } else {
+                                        new Notice(Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_NO_NUMBER"))
+                                    }
+                                }
+                                self.close()
+                                // r(true)
+                            }, Dict("FILE_EXPLORER_CREATE_FOLDER_MULTPLE_PLACEHOLDER"))
+                            self.open()
                             // })
                         } else {
                             amt = 1
@@ -469,25 +470,27 @@ export class FileExplorer extends ItemView {
             if (bf && bd) {
                 // const tree: { [key: string]: any } = {}
                 bf.forEach((file: TFile) => {
-                    let innerf = this.tree
+                    let innerf: tree = this.tree
                     let spath = file.path.split("/")
                     spath.forEach((path, ind) => {
                         if (ind + 1 < spath.length) {
                             if (!innerf[path]) innerf[path] = { children: {}, t: "folder", collapsed: true }
-                            if (innerf[path].children) innerf = innerf[path].children
+                            let children = innerf[path].children
+                            if (children) innerf = children
                         } else {
                             innerf[path] = { path: file.path, t: "file", stats: file.stat, ext: file.extension, TFile: file }
                         }
                     })
                 })
                 bd.forEach((dir: TFolder) => {
-                    let innerf = this.tree
+                    let innerf: tree = this.tree
                     let spath = dir.path.split("/")
                     spath.forEach((path) => {
                         if (!innerf[path]) {
                             innerf[path] = { children: {}, t: "folder" }
                         }
-                        if (innerf[path].children) innerf = innerf[path].children
+                        let children = innerf[path].children
+                        if (children) innerf = children
                     })
                 })
 

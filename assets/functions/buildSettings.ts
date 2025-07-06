@@ -265,32 +265,21 @@ export default class qolSettingTab extends PluginSettingTab {
         let config = this.containerEl.createEl("details")
         config.createEl("summary", { text: Dict("SETTINGS_PLUGIN_TITLE"), title: "Config settings", cls: "qol-setting-title" })
 
-        f = new Setting(config)
-            .setName(Dict("SETTINGS_PLUGIN_UPDATE_CHECK_TITLE"))
-            .setDesc(Dict("SETTINGS_PLUGIN_UPDATE_CHECK_DESC"))
-            .addToggle(bool => {
-                bool.setValue(this.plugin.settings.UpdateChecking)
-                    .onChange(async (value) => {
-                        this.plugin.settings.UpdateChecking = value
-                        await this.plugin.saveSettings()
-                    })
-                TSF = bool
-            })
         // f.descEl.appendChild(proc.createEl("p", { cls: "qol-setting-subtext", text: Dict("SETTINGS_PLUGIN_UPDATE_CHECK_DESC_SUB") }))
 
-        f = new Setting(config)
-            .setName(Dict("SETTINGS_PLUGIN_LANGUAGE_TITLE"))
-            .setDesc(Dict("SETTINGS_PLUGIN_LANGUAGE_DESC"))
-            .addDropdown(nl => {
-                let langs = Dict("")
-                langs.split(",").forEach((l:lkeys) => nl.addOption(l, Dict(l, "LANG")))
-                nl.setValue(this.plugin.settings.Language)
-                    .onChange(async (value) => {
-                        this.plugin.settings.Language = value
-                        await this.plugin.saveSettings()
-                    })
+        // f = new Setting(config)
+        //     .setName(Dict("SETTINGS_PLUGIN_LANGUAGE_TITLE"))
+        //     .setDesc(Dict("SETTINGS_PLUGIN_LANGUAGE_DESC"))
+        //     .addDropdown(nl => {
+        //         let langs = Dict("")
+        //         langs.split(",").forEach((l:lkeys) => nl.addOption(l, Dict(l, "LANG")))
+        //         nl.setValue(this.plugin.settings.Language)
+        //             .onChange(async (value) => {
+        //                 this.plugin.settings.Language = value
+        //                 await this.plugin.saveSettings()
+        //             })
 
-            })
+        //     })
 
         f = new Setting(config)
             .setName(Dict("SETTINGS_PLUGIN_CHANGELOG_TITLE"))

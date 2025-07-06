@@ -1,4 +1,11 @@
-let cl:{[key:string]:string} = {
+let cl: { [key: string]: string } = {
+    "1.6.2":
+        `# Quality Of Life (1.2.2):
+Thank you for using Quality of Life!
+
+Updates:
+
+- Auto language selection`,
     "1.3.0":
         `# QOL(Quality of Life) (1.3.0):
 Thank you for using Quality of Life!
@@ -10,8 +17,6 @@ Updates:
 - ChangeLog
 
 - ChangeLog Setting
-
-
 
 - The plugin was refactored into different files to be easier to edit.`,
     "1.4.0":
@@ -33,10 +38,10 @@ Updates:
 - Bug fixes
 
 - TODO: re-write the README`,
-"1.5.0":`
+    "1.5.0": `
 Development test unreleased.
 `,
-"1.5.5":`# Quality of Life (1.5.5):
+    "1.5.5": `# Quality of Life (1.5.5):
 
 Thank you for using Quality of Life!
 

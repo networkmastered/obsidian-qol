@@ -1,4 +1,4 @@
-import { Editor, EditorChange, MarkdownFileInfo, MarkdownView, Notice, Plugin, requestUrl, setTooltip, WorkspaceLeaf } from 'obsidian'
+import { Editor, EditorChange, getLanguage, MarkdownFileInfo, MarkdownView, Notice, Plugin, requestUrl, setTooltip, WorkspaceLeaf } from 'obsidian'
 import changelog from './assets/consts/changelog'
 import settings from './assets/functions/buildSettings'
 import markdownModal from './assets/functions/viewMarkDown'
@@ -29,14 +29,8 @@ export interface qolSettings {
     WriteTimer: boolean
     WriteTimerFormat: string
 
-    UpdateChecking: boolean
-    Language: string
+    Language: string | undefined
     ChangeLog: boolean
-
-
-    //Private Settings
-    LastUpdateCheck: number
-    LastUpdateLog: string
 
 
     //File Manager/Explorer
@@ -62,15 +56,8 @@ const DEFAULT_SETTINGS: qolSettings = {
     WriteTimer: false,
     WriteTimerFormat: "%ws/%bs",
 
-    UpdateChecking: true,
-    Language: "EN",
+    Language: undefined,
     ChangeLog: true,
-
-
-    // Private Settings
-    LastUpdateCheck: 0,
-    LastUpdateLog: "0.0.0",
-
 
     // File Manager/Explorer
     FM_Enabled: true,
@@ -115,7 +102,7 @@ export default class qolPlugin extends Plugin {
     async onload() {
         await this.loadSettings()
         mainSettings = this.settings
-        Dict("", this.settings.Language) // initilise cache
+        Dict("", this.settings.Language || getLanguage()) // initilise cache
 
         this.registerView(
             classN,
@@ -150,33 +137,6 @@ export default class qolPlugin extends Plugin {
 
         GrammerFixesInit(this)
 
-        if (this.manifest.version != this.settings.LastUpdateLog && this.settings.ChangeLog) {
-            this.settings.LastUpdateLog = this.manifest.version
-            this.saveSettings()
-            if (changelog[this.manifest.version]) {
-                // new qolMarkdownModal(this.app, changelog[this.manifest.version]).open()
-                new markdownModal(this.app, changelog[this.manifest.version]).open()
-            } else {
-                console.warn("QOL CHANGELOG: cannot find a log for the version: " + this.manifest.version)
-            }
-        }
-
-        window.setTimeout(() => {
-            if (this.settings.UpdateChecking && new Date().getTime() - this.settings.LastUpdateCheck > 1000 * 60 * 30) {
-                this.settings.LastUpdateCheck = new Date().getTime()
-                this.saveSettings()
-                requestUrl("https://api.github.com/repos/networkmastered/obsidian-qol/releases/latest").then((res) => {
-                    if (res.json) {
-                        if (!res.json.draft && res.json.assets.length > 2 && res.json.body && res.json.body.length > 0 && res.json.author.id == res.json.assets[0].uploader.id && res.json.author.id == 174283352) {
-                            if (res.json.tag_name != this.manifest.version) {
-                                new Notice(`QOL: An update is avalible! You can update by checking for updates in the community plugins tab. (${this.manifest.version}->${res.json.tag_name})`, 10000)
-                            }
-                        }
-                    }
-                })
-            }
-        }, 3000)
-
         // const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
         // 	new Notice('This is a notice!')
         // })
@@ -184,38 +144,38 @@ export default class qolPlugin extends Plugin {
 
         const NonSymbolCountText = this.addStatusBarItem()
         NonSymbolCountText.setText('')
-        // this.registerEvent(
-        this.app.workspace.on("editor-change", (_: unknown, i: MarkdownView) => {
-            if (i) {
-                window.setTimeout(() => { //let file update also somewhat syncs with Obsidian's char count
-                    if (this.settings.NonSymbChars && i && i.data) {
-                        let rl = strReplaceAll(i.data, (/[A-Za-z]*/gm), "").length
-                        NonSymbolCountText.setText((i.data.length - rl) + " non-symbols")
-                    } else {
-                        NonSymbolCountText.setText("")
-                    }
-                }, 100);
-            }
-        })
-        // )
-        // this.registerEvent(
-        this.app.workspace.on("file-open", () => {
-            if (this.settings.NonSymbChars) {
-                window.setTimeout(async () => { //let file update also somewhat syncs with Obsidian's char count
-                    let i = this.app.workspace.getActiveFile()
-                    if (i) {
-                        let str = await this.app.vault.read(i)
-                        if (str) {
-                            let rl = strReplaceAll(str, (/[A-Za-z]*/gm), "").length
-                            NonSymbolCountText.setText((str.length - rl) + " non-symbols")
+        this.registerEvent(
+            this.app.workspace.on("editor-change", (_: unknown, i: MarkdownView) => {
+                if (i) {
+                    window.setTimeout(() => { //let file update also somewhat syncs with Obsidian's char count
+                        if (this.settings.NonSymbChars && i && i.data) {
+                            let rl = strReplaceAll(i.data, (/[A-Za-z]*/gm), "").length
+                            NonSymbolCountText.setText((i.data.length - rl) + " non-symbols")
+                        } else {
+                            NonSymbolCountText.setText("")
                         }
-                    }
-                }, 100);
-            } else {
-                NonSymbolCountText.setText("")
-            }
-        })
-        // )
+                    }, 100);
+                }
+            })
+        )
+        this.registerEvent(
+            this.app.workspace.on("file-open", () => {
+                if (this.settings.NonSymbChars) {
+                    window.setTimeout(async () => { //let file update also somewhat syncs with Obsidian's char count
+                        let i = this.app.workspace.getActiveFile()
+                        if (i) {
+                            let str = await this.app.vault.read(i)
+                            if (str) {
+                                let rl = strReplaceAll(str, (/[A-Za-z]*/gm), "").length
+                                NonSymbolCountText.setText((str.length - rl) + " non-symbols")
+                            }
+                        }
+                    }, 100);
+                } else {
+                    NonSymbolCountText.setText("")
+                }
+            })
+        )
 
 
         const WriteBreakTimerText = this.addStatusBarItem()

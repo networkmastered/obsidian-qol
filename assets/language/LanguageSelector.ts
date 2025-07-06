@@ -2,7 +2,8 @@ import English from "./english"
 
 
 const langs: { [key: string]: { ["parser"]: Function, ["name"]: string } } = {
-    "EN": { parser: English, name: "English" }, //TRUNC NAME: {parser:FUNC,name:LocalEName}
+    //ISO: { parser: func, name: "lang" }
+    "EN": { parser: English, name: "English" },
 }
 
 // export type languages = "English"

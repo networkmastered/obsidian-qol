@@ -1,9 +1,9 @@
 {
 	"id": "qol",
 	"name": "QOL - quality of life",
-	"version": "1.6.0",
-	"minAppVersion": "0.15.0",
-	"description": "Adds several improvements and fixes to Obsidian.",
+	"version": "1.6.2",
+	"minAppVersion": "1.8.0",
+	"description": "Adds several improvements and fixes.",
 	"author": "networkmastered",
 	"authorUrl": "https://github.com/networkmastered",
 	"isDesktopOnly": false

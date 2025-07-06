@@ -1,6 +1,6 @@
 let cl: { [key: string]: string } = {
     "1.6.2":
-        `# Quality Of Life (1.2.2):
+        `# Quality Of Life (1.6.2):
 Thank you for using Quality of Life!
 
 Updates:

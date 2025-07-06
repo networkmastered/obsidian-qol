@@ -5,7 +5,11 @@ Thank you for using Quality of Life!
 
 Updates:
 
-- Auto language selection`,
+- Auto language selection
+
+- Re-implemented changelog
+
+- Changelog defaulted to not show`,
     "1.3.0":
         `# QOL(Quality of Life) (1.3.0):
 Thank you for using Quality of Life!

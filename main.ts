@@ -32,6 +32,7 @@ export interface qolSettings {
     Language: string | undefined
     ChangeLog: boolean
 
+    LastUpdateLog: string
 
     //File Manager/Explorer
     FM_Enabled: boolean
@@ -57,7 +58,9 @@ const DEFAULT_SETTINGS: qolSettings = {
     WriteTimerFormat: "%ws/%bs",
 
     Language: undefined,
-    ChangeLog: true,
+    ChangeLog: false,
+
+    LastUpdateLog: "0.0.0",
 
     // File Manager/Explorer
     FM_Enabled: true,
@@ -103,6 +106,17 @@ export default class qolPlugin extends Plugin {
         await this.loadSettings()
         mainSettings = this.settings
         Dict("", this.settings.Language || getLanguage()) // initilise cache
+
+        if (this.manifest.version != this.settings.LastUpdateLog && this.settings.ChangeLog) {
+            this.settings.LastUpdateLog = this.manifest.version
+            this.saveSettings()
+            if (changelog[this.manifest.version]) {
+                // new qolMarkdownModal(this.app, changelog[this.manifest.version]).open()
+                new markdownModal(this.app, changelog[this.manifest.version]+"\n*<sup>You can disable this in settings.</sup>*").open()
+            } else {
+                // console.warn("QOL CHANGELOG: cannot find a log for the version: " + this.manifest.version)
+            }
+        }
 
         this.registerView(
             classN,
